@@ -1,0 +1,1253 @@
+<!DOCTYPE html>
+<html lang="en-IE">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Pocketly — Your money, watched</title>
+<meta name="author" content="Pocketly" />
+<meta name="description" content="Track money made vs spent for personal and business in euro. Honest weekly limits, overspend warnings, forecasts and a shareable critical report." />
+<meta name="theme-color" content="#1B3A2B" />
+<meta property="og:type" content="website" />
+<meta property="og:title" content="Pocketly — Your money, watched" />
+<meta property="og:description" content="Honest spending tracking with weekly limits, forecasts and a shareable report." />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Pocketly — Your money, watched" />
+<meta name="twitter:description" content="Honest spending tracking with weekly limits, forecasts and a shareable report." />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F7F5EF; --surface:#FFFFFF; --surface-2:#FCFBF7;
+    --green:#1B3A2B; --green-2:#245C3D; --green-soft:#E7EFE8;
+    --ink:#1A1A17; --muted:#6B6B63; --hair:#E5E1D6;
+    --good:#2E7D4F; --warn:#B5791F; --warn-soft:#FBF1DD; --danger:#A23B2D; --danger-soft:#F7E6E2;
+    --r:14px; --shadow:0 1px 0 var(--hair);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{background:var(--bg);color:var(--ink);font-family:Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased;line-height:1.45;padding-bottom:84px}
+  h1,h2,h3,.display{font-family:Archivo,sans-serif;letter-spacing:-0.01em;margin:0}
+  .mono{font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums}
+  button{font-family:inherit;cursor:pointer}
+  input,select,textarea{font-family:inherit;font-size:16px}
+  .wrap{max-width:760px;margin:0 auto;padding:0 16px}
+  /* Header */
+  header{background:var(--green);color:#fff;padding:18px 0 16px}
+  header .wrap{display:flex;align-items:center;justify-content:space-between;gap:12px}
+  .brand{font-family:Archivo;font-weight:800;font-size:20px;letter-spacing:-0.02em;color:#fff}
+  .brand span{color:#9FC9AC}
+  .histbtn{width:30px;height:30px;border-radius:999px;border:1px solid rgba(255,255,255,.35);background:rgba(255,255,255,.08);color:#fff;font-size:18px;line-height:1;display:inline-flex;align-items:center;justify-content:center;padding:0}
+  .histbtn:disabled{opacity:.3}
+  .updated{font-size:12px;color:#BFD6C6;text-align:right}
+  .updated.stale{color:#F2C99A;font-weight:600}
+  /* View toggle */
+  .scope-bar{position:sticky;top:0;z-index:30;background:var(--bg);padding:12px 0 6px;border-bottom:1px solid var(--hair)}
+  .seg{display:flex;background:var(--surface-2);border:1px solid var(--hair);border-radius:999px;padding:4px;gap:4px}
+  .seg button{flex:1;border:0;background:transparent;color:var(--muted);font-weight:600;font-size:14px;padding:9px 0;border-radius:999px}
+  .seg button.on{background:var(--green);color:#fff}
+  section{margin:16px 0}
+  .card{background:var(--surface);border:1px solid var(--hair);border-radius:var(--r);padding:16px}
+  .card + .card{margin-top:12px}
+  .eyebrow{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:600;font-family:"IBM Plex Mono",monospace}
+  .row{display:flex;gap:12px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+  @media(max-width:520px){.grid3{grid-template-columns:1fr 1fr}}
+  .stat .k{font-size:12px;color:var(--muted);font-weight:600}
+  .stat .v{font-family:"IBM Plex Mono";font-weight:600;font-size:24px;margin-top:4px}
+  .stat .sub{font-size:11px;color:var(--muted);margin-top:2px;font-family:"IBM Plex Mono"}
+  .v.good{color:var(--good)} .v.warn{color:var(--warn)} .v.bad{color:var(--danger)}
+  /* Limit meter */
+  .meter-head{display:flex;justify-content:space-between;align-items:baseline}
+  .meter-head .lbl{font-family:Archivo;font-weight:700;font-size:16px}
+  .meter-head .amt{font-family:"IBM Plex Mono";font-weight:600;font-size:15px}
+  .meter{height:12px;border-radius:999px;background:var(--green-soft);overflow:hidden;margin-top:10px;border:1px solid var(--hair)}
+  .meter > i{display:block;height:100%;border-radius:999px;background:var(--good);transition:width .4s}
+  .meter.amber > i{background:var(--warn)} .meter.red > i{background:var(--danger)}
+  .meter-note{font-size:12.5px;margin-top:8px;color:var(--muted)}
+  .pill{display:inline-block;font-size:11px;font-weight:700;padding:3px 9px;border-radius:999px;font-family:"IBM Plex Mono"}
+  .pill.good{background:var(--green-soft);color:var(--green-2)}
+  .pill.amber{background:var(--warn-soft);color:var(--warn)}
+  .pill.red{background:var(--danger-soft);color:var(--danger)}
+  .banner{display:flex;gap:10px;align-items:flex-start;border-radius:12px;padding:12px 14px;font-size:13.5px}
+  .banner.warn{background:var(--warn-soft);color:#7a5212;border:1px solid #EAD4A6}
+  .banner.bad{background:var(--danger-soft);color:#7d281c;border:1px solid #E7C0B8}
+  .banner b{font-weight:700}
+  .list{display:flex;flex-direction:column}
+  .li{display:flex;align-items:center;gap:12px;padding:11px 0;border-top:1px solid var(--hair)}
+  .li:first-child{border-top:0}
+  .li .dot{width:9px;height:9px;border-radius:3px;flex:0 0 auto;background:var(--green-2)}
+  .li .main{flex:1;min-width:0}
+  .li .t{font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .li .s{font-size:12px;color:var(--muted)}
+  .li .amt{font-family:"IBM Plex Mono";font-weight:600;font-size:14px}
+  .li .amt.in{color:var(--good)}
+  .tag{font-size:10px;font-weight:700;font-family:"IBM Plex Mono";color:var(--muted);border:1px solid var(--hair);border-radius:6px;padding:2px 6px}
+  .section-title{display:flex;justify-content:space-between;align-items:baseline;margin:0 2px 10px}
+  .section-title h2{font-size:18px}
+  .link{background:none;border:0;color:var(--green-2);font-weight:700;font-size:13px;padding:0}
+  /* SVG charts */
+  .chart{width:100%}
+  .legend{display:flex;flex-wrap:wrap;gap:8px 14px;margin-top:12px}
+  .legend span{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)}
+  .legend i{width:10px;height:10px;border-radius:3px;display:inline-block}
+  /* Buttons */
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid var(--green);background:var(--green);color:#fff;font-weight:700;font-size:15px;padding:13px 16px;border-radius:12px;width:100%}
+  .btn.ghost{background:transparent;color:var(--green-2);border-color:var(--hair)}
+  .btn.sm{padding:9px 12px;font-size:13px;width:auto}
+  .btn-row{display:flex;gap:10px;flex-wrap:wrap}
+  .btn-row .btn{flex:1;min-width:130px}
+  /* Forms */
+  label.f{display:block;font-size:12px;font-weight:600;color:var(--muted);margin:0 0 5px}
+  .field{width:100%;border:1px solid var(--hair);border-radius:10px;padding:12px;background:var(--surface-2)}
+  .field:focus{outline:2px solid var(--green-soft);border-color:var(--green-2)}
+  .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .form-grid .full{grid-column:1/-1}
+  .seg2{display:flex;border:1px solid var(--hair);border-radius:10px;overflow:hidden}
+  .seg2 button{flex:1;border:0;background:var(--surface-2);color:var(--muted);font-weight:600;padding:11px 0;font-size:13px}
+  .seg2 button.on{background:var(--green-2);color:#fff}
+  /* Modal */
+  .modal{position:fixed;inset:0;background:rgba(26,26,23,.5);display:none;align-items:flex-end;z-index:100}
+  .modal.show{display:flex}
+  .sheet{background:var(--bg);width:100%;max-width:760px;margin:0 auto;border-radius:18px 18px 0 0;max-height:92vh;overflow:auto;padding:18px 16px calc(18px + env(safe-area-inset-bottom))}
+  .sheet h2{font-size:19px;margin-bottom:14px}
+  .sheet .close{float:right;border:0;background:var(--surface-2);width:34px;height:34px;border-radius:999px;font-size:18px;color:var(--muted)}
+  @media(min-width:760px){.modal{align-items:center}.sheet{border-radius:18px}}
+  /* Bottom nav */
+  nav.tab{position:fixed;left:0;right:0;bottom:0;z-index:40;background:var(--surface);border-top:1px solid var(--hair);display:flex;padding:8px 0 calc(8px + env(safe-area-inset-bottom))}
+  nav.tab button{flex:1;border:0;background:none;color:var(--muted);font-size:11px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px}
+  nav.tab button .ic{font-size:18px}
+  nav.tab button.on{color:var(--green-2)}
+  .fab{position:fixed;right:16px;bottom:78px;z-index:41;width:56px;height:56px;border-radius:18px;background:var(--green);color:#fff;border:0;font-size:26px;box-shadow:0 6px 20px rgba(27,58,43,.35)}
+  .empty{text-align:center;color:var(--muted);font-size:13.5px;padding:18px 8px}
+  .receipt-thumb{width:42px;height:42px;border-radius:8px;object-fit:cover;border:1px solid var(--hair)}
+  .hide{display:none!important}
+  body.viewonly #fabAdd{display:none!important}
+  .muted{color:var(--muted)}
+  .right{text-align:right}
+  .micro{font-size:11px;color:var(--muted)}
+  .goalbar{height:8px;border-radius:999px;background:var(--green-soft);overflow:hidden;margin-top:8px}
+  .goalbar > i{display:block;height:100%;background:var(--green-2)}
+  .ask{display:flex;gap:8px;margin-top:10px}
+  .ask .field{flex:1}
+  /* Report (also print) */
+  #reportDoc{background:#fff}
+  .rep-head{border-bottom:3px solid var(--green);padding-bottom:14px;margin-bottom:18px}
+  .rep-head .ttl{font-family:Archivo;font-weight:800;font-size:24px;color:var(--green)}
+  .rep-head .meta{font-size:12px;color:var(--muted);font-family:"IBM Plex Mono";margin-top:4px}
+  .verdict{border-left:4px solid var(--green-2);padding:12px 14px;background:var(--surface-2);border-radius:0 10px 10px 0;margin:14px 0;font-size:14.5px}
+  .verdict.warn{border-color:var(--warn);background:var(--warn-soft)}
+  .verdict.bad{border-color:var(--danger);background:var(--danger-soft)}
+  .rep-stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:14px 0}
+  .rep-stat{border:1px solid var(--hair);border-radius:10px;padding:12px}
+  .rep-stat .k{font-size:11px;color:var(--muted);font-weight:600}
+  .rep-stat .v{font-family:"IBM Plex Mono";font-weight:600;font-size:20px;margin-top:3px}
+  .findings{list-style:none;padding:0;margin:8px 0}
+  .findings li{display:flex;gap:10px;padding:9px 0;border-top:1px dashed var(--hair);font-size:14px}
+  .findings li:first-child{border-top:0}
+  .findings .mk{font-weight:800;font-family:"IBM Plex Mono"}
+  .mk.g{color:var(--good)} .mk.w{color:var(--warn)} .mk.b{color:var(--danger)}
+  .comments .cmt{border:1px solid var(--hair);border-radius:10px;padding:10px 12px;margin-top:8px}
+  .comments .cmt .who{font-weight:700;font-size:12px}
+  .comments .cmt .when{font-size:11px;color:var(--muted)}
+  .comments .reply{margin:8px 0 0 16px;border-left:2px solid var(--green-soft);padding-left:10px}
+  @media print{
+    body{background:#fff;padding:0}
+    header,nav.tab,.fab,.scope-bar,.no-print{display:none!important}
+    .wrap{max-width:100%;padding:0}
+    .card{border:none;padding:0}
+    #reportDoc{padding:0}
+    section{margin:0}
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <div style="display:flex;align-items:center;gap:8px">
+      <button class="histbtn" id="navBack" aria-label="Back">‹</button>
+      <button class="histbtn" id="navFwd" aria-label="Forward">›</button>
+      <div class="brand">Pocket<span>ly</span></div>
+    </div>
+    <div class="updated" id="updatedTag">No data yet</div>
+  </div>
+</header>
+<div class="scope-bar">
+  <div class="wrap">
+    <div class="seg" id="scopeSeg">
+      <button data-scope="personal" class="on">Personal</button>
+      <button data-scope="business">Business</button>
+      <button data-scope="combined">Combined</button>
+    </div>
+  </div>
+</div>
+<main class="wrap">
+  <!-- DASHBOARD -->
+  <div id="view-home"></div>
+  <!-- REPORT -->
+  <div id="view-report" class="hide"></div>
+  <!-- GOALS / SETTINGS -->
+  <div id="view-plan" class="hide"></div>
+</main>
+<button class="fab no-print" id="fabAdd" aria-label="Add money in or out">+</button>
+<nav class="tab no-print">
+  <button data-view="home" class="on"><span class="ic">▦</span>Home</button>
+  <button data-view="report"><span class="ic">▤</span>Report</button>
+  <button data-view="plan"><span class="ic">◎</span>Plan</button>
+  <button id="navUpload"><span class="ic">⇪</span>Upload</button>
+</nav>
+<!-- ADD MODAL -->
+<div class="modal" id="addModal">
+  <div class="sheet">
+    <button class="close" onclick="closeModal('addModal')">×</button>
+    <h2 id="addTitle">Add money</h2>
+    <button class="btn ghost" style="margin-bottom:14px" onclick="scanReceipt()">📷 Scan a receipt</button>
+    <div class="seg2" style="margin-bottom:14px" id="typeSeg">
+      <button data-type="spend" class="on">Money out</button>
+      <button data-type="income">Money in</button>
+    </div>
+    <div class="form-grid">
+      <div>
+        <label class="f">Amount (€)</label>
+        <input class="field mono" id="aAmount" type="number" inputmode="decimal" step="0.01" placeholder="0.00" />
+      </div>
+      <div>
+        <label class="f">Date</label>
+        <input class="field" id="aDate" type="date" />
+      </div>
+      <div class="full">
+        <label class="f">Who / what (merchant)</label>
+        <input class="field" id="aMerchant" placeholder="e.g. Tesco, Circle K, Netflix" />
+      </div>
+      <div>
+        <label class="f">Category</label>
+        <select class="field" id="aCategory"></select>
+      </div>
+      <div>
+        <label class="f">Paid by</label>
+        <div class="seg2" id="methodSeg">
+          <button data-method="card" class="on">Card</button>
+          <button data-method="cash">Cash</button>
+        </div>
+      </div>
+      <div>
+        <label class="f">For</label>
+        <div class="seg2" id="addScopeSeg">
+          <button data-ascope="personal" class="on">Personal</button>
+          <button data-ascope="business">Business</button>
+        </div>
+      </div>
+      <div>
+        <label class="f">Receipt? (optional)</label>
+        <input class="field" id="aReceipt" type="file" accept="image/*" capture="environment" />
+      </div>
+      <div class="full">
+        <label class="f">Note (optional)</label>
+        <input class="field" id="aNote" placeholder="Anything to remember" />
+      </div>
+    </div>
+    <div style="margin-top:16px" class="btn-row">
+      <button class="btn ghost" onclick="closeModal('addModal')">Cancel</button>
+      <button class="btn" onclick="saveTxn()">Save entry</button>
+    </div>
+    <p class="micro" style="margin-top:10px">Tip: change the category and Pocketly will offer to remember it for this merchant next time.</p>
+  </div>
+</div>
+<!-- GOAL MODAL -->
+<div class="modal" id="goalModal">
+  <div class="sheet">
+    <button class="close" onclick="closeModal('goalModal')">×</button>
+    <h2>New savings goal</h2>
+    <div class="form-grid">
+      <div class="full"><label class="f">Goal name</label><input class="field" id="gName" placeholder="e.g. Holiday fund" /></div>
+      <div><label class="f">Target (€)</label><input class="field mono" id="gTarget" type="number" inputmode="decimal" placeholder="500" /></div>
+      <div><label class="f">By date</label><input class="field" id="gBy" type="date" /></div>
+      <div class="full">
+        <label class="f">For</label>
+        <div class="seg2" id="goalScopeSeg">
+          <button data-gscope="personal" class="on">Personal</button>
+          <button data-gscope="business">Business</button>
+        </div>
+      </div>
+    </div>
+    <div class="btn-row" style="margin-top:16px">
+      <button class="btn ghost" onclick="closeModal('goalModal')">Cancel</button>
+      <button class="btn" onclick="saveGoal()">Add goal</button>
+    </div>
+  </div>
+</div>
+<!-- BILL MODAL -->
+<div class="modal" id="billModal">
+  <div class="sheet">
+    <button class="close" onclick="closeModal('billModal')">×</button>
+    <h2>Upcoming bill</h2>
+    <div class="form-grid">
+      <div class="full"><label class="f">Name</label><input class="field" id="bName" placeholder="e.g. Insurance, VAT, rent" /></div>
+      <div><label class="f">Amount (€)</label><input class="field mono" id="bAmount" type="number" inputmode="decimal" placeholder="0.00" /></div>
+      <div><label class="f">Due date</label><input class="field" id="bDue" type="date" /></div>
+      <div><label class="f">For</label>
+        <div class="seg2" id="billScopeSeg">
+          <button data-bscope="personal" class="on">Personal</button>
+          <button data-bscope="business">Business</button>
+        </div>
+      </div>
+      <div><label class="f">Repeats?</label>
+        <select class="field" id="bRepeat"><option value="none">One-off</option><option value="monthly">Monthly</option><option value="yearly">Yearly</option></select>
+      </div>
+    </div>
+    <div class="btn-row" style="margin-top:16px">
+      <button class="btn ghost" onclick="closeModal('billModal')">Cancel</button>
+      <button class="btn" onclick="saveBill()">Add bill</button>
+    </div>
+  </div>
+</div>
+<!-- hidden upload input -->
+<input id="fileImport" type="file" accept=".csv,.txt,.xlsx,.xls,image/*,application/pdf,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" multiple class="hide" />
+<!-- hidden scan input (camera) -->
+<input id="scanInput" type="file" accept="image/*,application/pdf" capture="environment" class="hide" />
+<script>
+/* ---------- Storage: localStorage with in-memory fallback ---------- */
+const Store=(()=>{let mem={},ok=false;try{localStorage.setItem('__t','1');localStorage.removeItem('__t');ok=true;}catch(e){ok=false;}
+  return{get:k=>{try{return ok?localStorage.getItem(k):(mem[k]??null);}catch(e){return mem[k]??null;}},
+         set:(k,v)=>{try{ok?localStorage.setItem(k,v):mem[k]=v;}catch(e){mem[k]=v;}},
+         persistent:ok};})();
+const KEY='pocketly_v2';
+const BUILD='b24 · 21 Jun 2026';
+/* ---------- Cloud sync (Supabase) ---------- */
+const SB_URL='https://mumnsjtwvkdnnsyncaxk.supabase.co';
+const SB_KEY='sb_publishable_jN8ra4PriSLy2jRGW3xKIQ_F80z1T8u';
+const SB_CDN='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
+let sb=null,CLOUDKEY=null,VIEWONLY=false,cloudReady=false,_pushT=null;
+let LVERSIONS=[];
+const ACCOUNT_KEY='pkacct_n0el_7Yq3Wk9rZ2xD8f';
+function cloudKeyGet(){return Store.get('pocketly_cloudkey')||ACCOUNT_KEY;}
+async function sbInit(){if(sb)return sb;if(typeof window.supabase==='undefined')await loadScript(SB_CDN);sb=window.supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:false}});return sb;}
+function cloudStatus(t){const el=document.getElementById('cloudStatus');if(el)el.textContent=t;}
+async function cloudPull(){try{await sbInit();cloudStatus('Syncing…');const r=await sb.from('pocketly_data').select('data,updated,versions').eq('id',CLOUDKEY).maybeSingle();if(r.error){logError('cloud pull: '+r.error.message,'cloud');cloudStatus('Offline');return;}if(r.data&&r.data.data){const cloudT=r.data.updated?new Date(r.data.updated).getTime():0;const localT=(DB.meta&&DB.meta.lastUpdated)?new Date(DB.meta.lastUpdated).getTime():0;if(VIEWONLY||cloudT>=localT){DB=Object.assign(defaults(),r.data.data);if(!VIEWONLY){try{Store.set(KEY,JSON.stringify(DB));}catch(e){}}renderAll();}}if(r.data&&r.data.versions){LVERSIONS=r.data.versions;try{Store.set('pocketly_versions',JSON.stringify(LVERSIONS));}catch(e){}}cloudReady=true;cloudStatus('Synced');lockCheck();}catch(e){logError('cloud pull ex: '+e.message,'cloud');cloudStatus('Offline');}}
+function cloudPush(){if(VIEWONLY)return;clearTimeout(_pushT);_pushT=setTimeout(async function(){try{snapshotMaybe();await sbInit();cloudStatus('Saving…');const r=await sb.from('pocketly_data').upsert({id:CLOUDKEY,data:DB,updated:new Date().toISOString(),versions:LVERSIONS});if(r.error){logError('cloud push: '+r.error.message,'cloud');cloudStatus('Offline');}else{cloudReady=true;cloudStatus('Synced');}}catch(e){logError('cloud push ex: '+e.message,'cloud');cloudStatus('Offline');}},800);}
+function shareLink(){return location.origin+location.pathname+'?view='+encodeURIComponent(CLOUDKEY||'');}
+function copyShare(){const x=shareLink();if(navigator.clipboard)navigator.clipboard.writeText(x).then(function(){toast('Friend link copied');});else toast(x);}
+function syncLink(){return location.origin+location.pathname+'?key='+encodeURIComponent(CLOUDKEY||'');}
+function copySync(){const x=syncLink();if(navigator.clipboard)navigator.clipboard.writeText(x).then(function(){toast('Sync link copied — open it on your other devices');});else toast(x);}
+function adoptSync(){const el=document.getElementById('syncIn');const k=(el&&el.value||'').trim();if(!k)return toast('Paste a sync code first');CLOUDKEY=k.replace(/^.*[?&]key=/,'').replace(/^.*[?&]view=/,'');try{Store.set('pocketly_cloudkey',CLOUDKEY);}catch(e){}cloudPull();toast('Loading that account…');}
+function hashStr(s){let h=5381;for(let i=0;i<s.length;i++)h=((h*33)^s.charCodeAt(i))>>>0;return 'h'+h.toString(36);}
+function isUnlocked(){try{return sessionStorage.getItem('pocketly_unlocked')==='1';}catch(e){return window.__unlocked===true;}}
+function setUnlocked(){try{sessionStorage.setItem('pocketly_unlocked','1');}catch(e){window.__unlocked=true;}}
+function lockCheck(){const ph=DB.settings&&DB.settings.passHash;if(ph&&!isUnlocked())showLock();else{const o=document.getElementById('lockOv');if(o)o.style.display='none';}}
+function showLock(){let o=document.getElementById('lockOv');if(!o){o=document.createElement('div');o.id='lockOv';o.style.cssText='position:fixed;inset:0;z-index:500;background:var(--green);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;color:#fff;padding:24px';o.innerHTML='<div style="font-family:Archivo;font-weight:800;font-size:26px">Pocketly</div><div style="font-size:14px;color:#BFD6C6">Enter your password</div><input id="lockPw" type="password" class="field mono" style="max-width:240px;text-align:center" /><button class="btn" style="max-width:240px;background:#fff;color:#1B3A2B;border-color:#fff" onclick="tryUnlock()">Unlock</button><div id="lockMsg" class="micro" style="color:#F2C99A;height:16px"></div>';document.body.appendChild(o);}o.style.display='flex';const i=document.getElementById('lockPw');if(i){i.value='';try{i.focus();}catch(e){}i.onkeydown=function(e){if(e.key==='Enter')tryUnlock();};}}
+function tryUnlock(){const v=(document.getElementById('lockPw')||{}).value||'';if(DB.settings&&hashStr(v)===DB.settings.passHash){setUnlocked();const o=document.getElementById('lockOv');if(o)o.style.display='none';}else{const m=document.getElementById('lockMsg');if(m)m.textContent='Wrong password';}}
+function setPassword(){const p=prompt('Set a password (you will need it to open Pocketly on any device). Leave blank and OK to remove it.');if(p===null)return;if(!p){if(DB.settings)DB.settings.passHash=null;save();toast('Password removed');return;}DB.settings.passHash=hashStr(p);setUnlocked();save();toast('Password set');}
+function manualHTML(){
+  const m=DB.transactions.filter(function(t){return t.source==='manual'||t.edited;}).sort(function(a,b){return new Date(b.edited||b.date)-new Date(a.edited||a.date);});
+  const rows=m.length?('<div class="list">'+m.slice(0,20).map(function(t){return '<div class="li"><span class="dot" style="background:#245C3D"></span><div class="main"><div class="t">'+esc(t.merchant||t.category)+'</div><div class="s">'+new Date(t.date).toLocaleDateString('en-IE',{day:'numeric',month:'short'})+' \u00b7 '+esc(t.category)+(t.edited?' \u00b7 edited':' \u00b7 added')+'</div></div><div class="amt">'+(t.type==='income'?'+':'\u2212')+fmt(t.amount)+'</div>'+(VIEWONLY?'':'<button class="btn ghost sm no-print" style="flex:0 0 auto;margin-left:6px" onclick="openEdit(\''+t.id+'\')">Edit</button>')+'</div>';}).join('')+'</div>'):'<div class="empty">No manual entries or edits yet. Tap + to add one, or Edit any entry.</div>';
+  return '<section><div class="section-title"><h2>Manual entries &amp; edits</h2></div><div class="card">'+rows+'</div></section>';
+}
+function importsHTML(){
+  const im=DB.imports||[];
+  const rows=im.length?('<div class="list">'+im.slice(0,15).map(function(x){return '<div class="li"><span class="dot" style="background:#245C3D"></span><div class="main"><div class="t" style="white-space:normal">'+esc(x.name)+'</div><div class="s">'+new Date(x.at).toLocaleString('en-IE')+' \u00b7 '+(x.added||0)+' added</div></div></div>';}).join('')+'</div>'):'<div class="empty">No files imported yet. Use Upload to add a statement.</div>';
+  return '<section><div class="section-title"><h2>Imported files</h2></div><div class="card">'+rows+'</div></section>';
+}
+function cloudHTML(){
+  return '<section><div class="section-title"><h2>Cloud &amp; sharing</h2></div><div class="card">'
+   +'<div class="meter-note" style="margin:0">Status: <b id="cloudStatus">'+(cloudReady?'Synced':'Connecting…')+'</b>. Your data saves to the cloud automatically.</div>'
+   +(VIEWONLY?'<p class="micro" style="margin-top:10px">You are viewing a shared, read-only copy.</p>':(
+       '<div class="btn-row" style="margin-top:12px"><button class="btn sm" onclick="copySync()">My sync link (other devices)</button><button class="btn ghost sm" onclick="copyShare()">Friend link (read-only)</button><button class="btn ghost sm" onclick="cloudPull()">Pull latest</button></div>'
+      +'<label class="f" style="margin-top:14px">Your sync code (same data on every device)</label><div class="field mono" style="word-break:break-all;font-size:12px">'+(CLOUDKEY||'')+'</div>'
+      +'<label class="f" style="margin-top:10px">Load another device\'s data — paste its sync code or link</label><div class="ask"><input class="field mono" id="syncIn" placeholder="paste sync code or link"><button class="btn sm" onclick="adoptSync()">Load</button></div><div class="btn-row" style="margin-top:10px"><button class="btn ghost sm" onclick="setPassword()">Set / change password</button></div>'
+      +'<p class="micro" style="margin-top:10px">Open <b>My sync link</b> on your phone/other devices to see and edit the same data. The <b>Friend link</b> is read-only — only share it with people you trust. Tip: open links in Safari/Chrome, not inside WhatsApp\'s preview.</p>'))
+   +'</div></section>';
+}
+function loadVersions(){try{LVERSIONS=JSON.parse(Store.get('pocketly_versions')||'[]');}catch(e){LVERSIONS=[];}}
+function snapshotMaybe(){try{const d=dISO(today());const last=LVERSIONS[0];if(!last||String(last.at).slice(0,10)!==d){LVERSIONS.unshift({at:new Date().toISOString(),data:JSON.parse(JSON.stringify(DB))});LVERSIONS=LVERSIONS.slice(0,5);Store.set('pocketly_versions',JSON.stringify(LVERSIONS));}}catch(e){}}
+function restoreVersion(i){const v=LVERSIONS[i];if(!v)return;if(confirm('Restore the version from '+new Date(v.at).toLocaleString('en-IE')+'? This replaces your current data.')){DB=Object.assign(defaults(),v.data);save();setView('home');toast('Version restored');}}
+function versionsHTML(){
+  const v=LVERSIONS;
+  const rows=v.length?('<div class="list">'+v.map(function(sx,i){return '<div class="li"><span class="dot" style="background:#245C3D"></span><div class="main"><div class="t">'+new Date(sx.at).toLocaleString('en-IE')+'</div><div class="s">'+((sx.data&&sx.data.transactions)?sx.data.transactions.length:0)+' entries</div></div>'+(VIEWONLY?'':'<button class="btn ghost sm no-print" style="flex:0 0 auto" onclick="restoreVersion('+i+')">Restore</button>')+'</div>';}).join('')+'</div>'):'<div class="empty">No saved versions yet — one is kept per day, last 5 retained.</div>';
+  return '<section><div class="section-title"><h2>Version history (last 5)</h2></div><div class="card">'+rows+'<p class="micro" style="margin-top:10px">A snapshot is saved once a day. Restore puts an old version back as your current data.</p></div></section>';
+}
+async function cloudBoot(){try{const p=new URLSearchParams(location.search);const v=p.get('view');const k=p.get('key');if(v){VIEWONLY=true;CLOUDKEY=v;document.body.classList.add('viewonly');const tg=document.getElementById('updatedTag');if(tg){tg.textContent='Shared view · read only';}}else if(k){CLOUDKEY=k;try{Store.set('pocketly_cloudkey',k);}catch(e){}}else{CLOUDKEY=cloudKeyGet();}await cloudPull();if(!VIEWONLY)cloudPush();}catch(e){logError('cloudBoot: '+e.message,'cloud');}}
+/* ---------- Defaults ---------- */
+const CATS=["Groceries","Fuel","Eating out","Subscriptions","Utilities","Rent / Mortgage","Transport","Shopping","Health","Entertainment","Business supplies","Fees & charges","Transfers","Other"];
+const EXCL="Transfers"; // transfers between own/people accounts: shown but excluded from spend/income totals
+const countable=t=>t.category!==EXCL;
+const MERCHANT_MAP={tesco:"Groceries",aldi:"Groceries",lidl:"Groceries",dunnes:"Groceries",supervalu:"Groceries","super valu":"Groceries",centra:"Groceries",spar:"Groceries","star market":"Groceries",mace:"Groceries",gala:"Groceries",iceland:"Groceries",
+  "circle k":"Fuel",applegreen:"Fuel",maxol:"Fuel",texaco:"Fuel",topaz:"Fuel",esso:"Fuel",gulf:"Fuel","filling stat":"Fuel","service stat":"Fuel",burgess:"Fuel",petrol:"Fuel",
+  netflix:"Subscriptions",spotify:"Subscriptions",disney:"Subscriptions",youtube:"Subscriptions",prime:"Subscriptions",icloud:"Subscriptions","google one":"Subscriptions","apple.com":"Subscriptions",microsoft:"Subscriptions",openai:"Subscriptions",chatgpt:"Subscriptions",audible:"Subscriptions",
+  amazon:"Shopping",ebay:"Shopping",zara:"Shopping",penneys:"Shopping",argos:"Shopping",ikea:"Shopping",temu:"Shopping",shein:"Shopping","harvey nor":"Shopping",
+  "electric ireland":"Utilities",electric:"Utilities","bord gais":"Utilities",sse:"Utilities",airtricity:"Utilities",eir:"Utilities",vodafone:"Utilities",three:"Utilities",virgin:"Utilities","gas networks":"Utilities","irish water":"Utilities",uisce:"Utilities",
+  "an post":"Fees & charges",revolut:"Fees & charges",stripe:"Fees & charges",paypal:"Fees & charges",aib:"Fees & charges",boi:"Fees & charges","bank of ireland":"Fees & charges",ptsb:"Fees & charges",interest:"Fees & charges",
+  deliveroo:"Eating out","just eat":"Eating out",mcdonald:"Eating out",supermac:"Eating out",starbucks:"Eating out",costa:"Eating out",cafe:"Eating out",restaurant:"Eating out",insomnia:"Eating out",kfc:"Eating out",domino:"Eating out",chipper:"Eating out",takeaway:"Eating out",
+  mortgage:"Rent / Mortgage",
+  "dublin bus":"Transport","irish rail":"Transport",luas:"Transport",leap:"Transport",aircoach:"Transport",toll:"Transport",ryanair:"Transport","aer lingus":"Transport",uber:"Transport","free now":"Transport",parking:"Transport",
+  pharmacy:"Health",hospital:"Health",dentist:"Health",boots:"Health",specsavers:"Health",
+  cinema:"Entertainment",playstation:"Entertainment",steam:"Entertainment",xbox:"Entertainment"};
+function defaults(){return{
+  meta:{lastUpdated:null,created:new Date().toISOString()},
+  settings:{limits:{personal:700,business:500},categoryLimits:{},locale:"en-IE",currency:"EUR"},
+  rules:{}, transactions:[], bills:[], goals:[], reportHistory:[], featureRequests:[], healthLog:[], errorLog:[], imports:[]
+};}
+let DB=load(); let SCOPE='personal'; let VIEW='home'; let HOMEPERIOD='year';
+let addType='spend', addMethod='card', addScope='personal', goalScope='personal', billScope='personal'; let editId=null;
+function load(){try{const r=Store.get(KEY);if(!r)return seed();const d=JSON.parse(r);return Object.assign(defaults(),d);}catch(e){return seed();}}
+function save(){DB.meta.lastUpdated=new Date().toISOString();Store.set(KEY,JSON.stringify(DB));renderAll();cloudPush();}
+function seed(){const d=defaults();return d;}
+/* ---------- Helpers ---------- */
+const fmt=n=>new Intl.NumberFormat('en-IE',{style:'currency',currency:'EUR'}).format(n||0);
+const fmt0=n=>new Intl.NumberFormat('en-IE',{style:'currency',currency:'EUR',maximumFractionDigits:0}).format(n||0);
+const dISO=d=>new Date(d).toISOString().slice(0,10);
+const today=()=>new Date();
+const startOfWeek=()=>{const d=today();const day=(d.getDay()+6)%7;d.setHours(0,0,0,0);d.setDate(d.getDate()-day);return d;};
+const yearOf=d=>new Date(d).getFullYear();
+const daysBetween=(a,b)=>Math.round((new Date(b)-new Date(a))/86400000);
+const uid=()=>Math.random().toString(36).slice(2,10);
+function esc(s){return(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+function scopeTxns(scope=SCOPE){return DB.transactions.filter(t=>scope==='combined'?true:t.scope===scope);}
+function inRange(t,from,to){const d=new Date(t.date);return d>=new Date(from)&&d<=new Date(to+'T23:59:59');}
+function autoCat(merchant){const m=(merchant||'').toLowerCase().trim();if(DB.rules[m])return DB.rules[m];for(const k in MERCHANT_MAP){if(m.includes(k))return MERCHANT_MAP[k];}return"Other";}
+function weeklyLimit(scope=SCOPE){if(scope==='combined')return DB.settings.limits.personal+DB.settings.limits.business;return DB.settings.limits[scope]||0;}
+function spentThisWeek(scope=SCOPE){const s=startOfWeek();return scopeTxns(scope).filter(t=>t.type==='spend'&&countable(t)&&new Date(t.date)>=s).reduce((a,t)=>a+t.amount,0);}
+function ytd(scope=SCOPE){const y=today().getFullYear();const ts=scopeTxns(scope).filter(t=>yearOf(t.date)===y&&countable(t));
+  const made=ts.filter(t=>t.type==='income').reduce((a,t)=>a+t.amount,0);
+  const spent=ts.filter(t=>t.type==='spend').reduce((a,t)=>a+t.amount,0);
+  return{made,spent,left:made-spent};}
+/* recurring detection: merchant seen in 2+ distinct months with similar amount */
+function recurring(scope=SCOPE){
+  const map={};
+  scopeTxns(scope).filter(t=>t.type==='spend'&&countable(t)).forEach(t=>{
+    const k=(t.merchant||t.category||'?').toLowerCase();
+    map[k]=map[k]||{name:t.merchant||t.category,months:new Set(),amts:[],cat:t.category};
+    map[k].months.add(new Date(t.date).toISOString().slice(0,7));
+    map[k].amts.push(t.amount);
+  });
+  return Object.values(map).filter(r=>r.months.size>=2).map(r=>{
+    const avg=r.amts.reduce((a,b)=>a+b,0)/r.amts.length;
+    return{name:r.name,cat:r.cat,monthly:avg,count:r.months.size,annual:avg*12,isSub:r.cat==='Subscriptions'||(avg<60&&r.months.size>=3)};
+  }).sort((a,b)=>b.annual-a.annual);
+}
+function catTotals(scope=SCOPE,from,to){const o={};scopeTxns(scope).filter(t=>t.type==='spend'&&countable(t)&&(!from||inRange(t,from,to))).forEach(t=>{o[t.category]=(o[t.category]||0)+t.amount;});return o;}
+function monthly(scope=SCOPE,year=today().getFullYear()){const sp=Array(12).fill(0),inc=Array(12).fill(0);
+  scopeTxns(scope).filter(t=>yearOf(t.date)===year&&countable(t)).forEach(t=>{const m=new Date(t.date).getMonth();t.type==='spend'?sp[m]+=t.amount:inc[m]+=t.amount;});return{sp,inc};}
+function cashTrend(scope=SCOPE){const now=today();const thisM={c:0,t:0},lastM={c:0,t:0};
+  scopeTxns(scope).filter(t=>t.type==='spend'&&countable(t)).forEach(t=>{const d=new Date(t.date);const diff=(now.getFullYear()-d.getFullYear())*12+(now.getMonth()-d.getMonth());
+    if(diff===0){thisM.t+=t.amount;if(t.method==='cash')thisM.c+=t.amount;}
+    if(diff===1){lastM.t+=t.amount;if(t.method==='cash')lastM.c+=t.amount;}});
+  return{thisM,lastM};}
+/* forecast: avg daily spend YTD projected to target date */
+function forecastTo(dateStr,scope=SCOPE){const y=today().getFullYear();const ts=scopeTxns(scope).filter(t=>t.type==='spend'&&countable(t)&&yearOf(t.date)===y);
+  const total=ts.reduce((a,t)=>a+t.amount,0);const elapsed=Math.max(1,daysBetween(new Date(y,0,1),today()));const perDay=total/elapsed;
+  const days=Math.max(0,daysBetween(today(),dateStr));return{perDay,projected:total+perDay*days,extra:perDay*days,days};}
+/* ---------- SVG charts (no dependency) ---------- */
+const PAL=["#1B3A2B","#245C3D","#3E7D5C","#B5791F","#A23B2D","#5C7A6B","#8AA897","#C9A24B","#6B6B63","#2E7D4F","#7D4F2E","#444"];
+function donut(data){const entries=Object.entries(data).filter(([k,v])=>v>0).sort((a,b)=>b[1]-a[1]);
+  const total=entries.reduce((a,[,v])=>a+v,0);if(!total)return'<div class="empty">No spending yet.</div>';
+  const R=54,C=2*Math.PI*R;let off=0;let segs='';
+  entries.forEach(([k,v],i)=>{const frac=v/total;const len=frac*C;
+    segs+=`<circle r="${R}" cx="70" cy="70" fill="none" stroke="${PAL[i%PAL.length]}" stroke-width="22" stroke-dasharray="${len} ${C-len}" stroke-dashoffset="${-off}" transform="rotate(-90 70 70)"/>`;off+=len;});
+  const leg=entries.map(([k,v],i)=>`<span><i style="background:${PAL[i%PAL.length]}"></i>${esc(k)} · ${fmt0(v)}</span>`).join('');
+  return`<svg viewBox="0 0 140 140" class="chart" style="max-width:200px;display:block;margin:0 auto"><g>${segs}</g><text x="70" y="66" text-anchor="middle" font-family="IBM Plex Mono" font-size="13" font-weight="600" fill="#1A1A17">${fmt0(total)}</text><text x="70" y="82" text-anchor="middle" font-family="Inter" font-size="8" fill="#6B6B63">spent</text></svg><div class="legend">${leg}</div>`;}
+function bars(sp,inc){const M=["J","F","M","A","M","J","J","A","S","O","N","D"];const max=Math.max(1,...sp,...inc);const W=320,H=120,bw=W/12;
+  let g='';for(let i=0;i<12;i++){const sh=(sp[i]/max)*H,ih=(inc[i]/max)*H;const x=i*bw;
+    g+=`<rect x="${x+3}" y="${H-ih}" width="${bw/2-3}" height="${ih}" fill="#245C3D" rx="2"/>`;
+    g+=`<rect x="${x+bw/2}" y="${H-sh}" width="${bw/2-3}" height="${sh}" fill="#A23B2D" rx="2"/>`;
+    g+=`<text x="${x+bw/2}" y="${H+12}" text-anchor="middle" font-size="8" fill="#6B6B63" font-family="IBM Plex Mono">${M[i]}</text>`;}
+  return`<svg viewBox="0 0 ${W} ${H+18}" class="chart">${g}</svg><div class="legend"><span><i style="background:#245C3D"></i>Made</span><span><i style="background:#A23B2D"></i>Spent</span></div>`;}
+/* ===== Round 1 insights: Health, Audit, Leaks, Cashflow, Subs ===== */
+function monthsElapsedYTD(){return Math.max(1,(today()-new Date(today().getFullYear(),0,1))/2629800000);}
+function monthlyIncomeAvg(){return ytd().made/monthsElapsedYTD();}
+function monthlyExpenseAvg(){return ytd().spent/monthsElapsedYTD();}
+function spendByCatRange(d0,d1){const now=today();const from=new Date(now);from.setDate(from.getDate()-d1);const to=new Date(now);to.setDate(to.getDate()-d0);
+  const o={};scopeTxns().filter(t=>t.type==='spend'&&countable(t)).forEach(t=>{const d=new Date(t.date);if(d>=from&&d<to)o[t.category]=(o[t.category]||0)+t.amount;});return o;}
+function sumObj(o){return Object.values(o).reduce((a,b)=>a+b,0);}
+function billsWithin(days){const out=[];const horizon=new Date();horizon.setDate(horizon.getDate()+days);const start=new Date();start.setHours(0,0,0,0);
+  DB.bills.filter(b=>SCOPE==='combined'||b.scope===SCOPE).forEach(b=>{let due=new Date(b.due);
+    if(b.repeat==='monthly'){while(due<start)due.setMonth(due.getMonth()+1);}
+    if(b.repeat==='yearly'){while(due<start)due.setFullYear(due.getFullYear()+1);}
+    if(due<=horizon&&due>=start)out.push({...b,due:dISO(due)});});
+  return out.sort((a,b)=>new Date(a.due)-new Date(b.due));}
+function computeHealth(){
+  const y=ytd();const hasData=(y.made>0||y.spent>0);
+  if(!hasData)return{total:0,hasData:false,months:0,parts:[['Savings',0,30],['Spending Control',0,20],['Emergency Fund',0,20],['Bills',0,15],['Income Stability',0,15]]};
+  const sr=y.made>0?y.left/y.made:0;
+  const mExp=monthlyExpenseAvg()||1;const mInc=monthlyIncomeAvg();
+  const savings=y.made>0?Math.max(0,Math.min(30,sr>=0.2?30:(sr/0.2)*30)):0;
+  const wl=weeklyLimit(),sw=spentThisWeek();
+  let spending=0;if(y.spent>0){const r=wl?sw/wl:1;spending=r<=0.8?20:r<=1?16:r<=1.25?9:3;}
+  const months=Math.max(0,y.left)/mExp;const emergency=y.made>0?Math.max(0,Math.min(20,(months/6)*20)):0;
+  const bills30=billsWithin(30).reduce((a,b)=>a+b.amount,0);
+  let billsScore=0;if(mInc>0){const br=bills30/mInc;billsScore=br<=0.5?15:br<=0.8?10:br<=1?5:2;}
+  const incArr=monthly().inc.filter(v=>v>0);let income=0;
+  if(incArr.length>=2){const m=incArr.reduce((a,b)=>a+b,0)/incArr.length;const sd=Math.sqrt(incArr.reduce((a,b)=>a+(b-m)*(b-m),0)/incArr.length);const cv=m?sd/m:1;income=Math.max(0,Math.min(15,(1-cv)*15));}
+  else if(incArr.length===1){income=7;}
+  const total=Math.round(savings+spending+emergency+billsScore+income);
+  return{total,hasData:true,months,parts:[['Savings',Math.round(savings),30],['Spending Control',Math.round(spending),20],['Emergency Fund',Math.round(emergency),20],['Bills',Math.round(billsScore),15],['Income Stability',Math.round(income),15]]};
+}
+function incomeRange(d0,d1){const now=today();const from=new Date(now);from.setDate(from.getDate()-d1);const to=new Date(now);to.setDate(to.getDate()-d0);
+  return scopeTxns().filter(t=>t.type==='income'&&countable(t)).reduce((a,t)=>{const d=new Date(t.date);return(d>=from&&d<to)?a+t.amount:a;},0);}
+function computeAudit(){
+  const cur=spendByCatRange(0,7),prev=spendByCatRange(7,14);
+  const good=[],warn=[],crit=[];const curTot=sumObj(cur),prevTot=sumObj(prev);
+  Object.keys(Object.assign({},cur,prev)).forEach(c=>{const a=cur[c]||0,b=prev[c]||0;if(b>=10){const d=Math.round((a-b)/b*100);if(d>=15)warn.push(c+' up '+d+'%');else if(d<=-10)good.push(c+' down '+Math.abs(d)+'%');}});
+  if(prevTot>0&&curTot<prevTot)good.push('Total spending down '+Math.round((prevTot-curTot)/prevTot*100)+'% vs last week');
+  const incCur=incomeRange(0,7),incPrev=incomeRange(7,14);
+  if(incPrev>0&&incCur-incPrev>0)good.push('Income up '+fmt0(incCur-incPrev)+' vs last week');
+  const we=spendingPatterns().weekendAvgPerWeek;if(we>20)warn.push('Weekend spending '+fmt0(we)+' average');
+  const wl=weeklyLimit(),sw=spentThisWeek();
+  if(wl&&sw>wl){const over=sw-wl;crit.push("You're overspending by "+fmt0(over)+" this week");crit.push('Projected '+fmt0(over*52)+' annual waste');}
+  return{good,warn,crit};
+}
+function computeLeaks(){
+  const leaks=[];recurring().filter(r=>r.isSub).forEach(s=>leaks.push([s.name,s.annual]));
+  const me=monthsElapsedYTD();const ct=catTotals();
+  ['Eating out','Shopping','Entertainment'].forEach(c=>{if(ct[c]){const ann=ct[c]/me*12;if(ann>50)leaks.push([c+' (annualised)',ann]);}});
+  leaks.sort((a,b)=>b[1]-a[1]);return{leaks:leaks.slice(0,8),total:leaks.reduce((a,l)=>a+l[1],0)};
+}
+function computeCashflow(){const bills=billsWithin(30);const tot=bills.reduce((a,b)=>a+b.amount,0);
+  const incoming=monthlyIncomeAvg();const buffer=Math.max(0,ytd().left);return{bills,tot,incoming,cover:(incoming+buffer)>=tot};}
+function hcolor(g){return g==='red'?'#A23B2D':g==='amber'?'#B5791F':'#2E7D4F';}
+const BENCH={'Eating out':8,'Groceries':12,'Subscriptions':4,'Shopping':6,'Fuel':6,'Transport':6,'Entertainment':5};
+function spendingPatterns(){
+  const y=today().getFullYear();const start=new Date(y,0,1);const days=Math.max(1,daysBetween(start,today()));const weeks=days/7;
+  const dow=[0,0,0,0,0,0,0];let total=0;
+  scopeTxns().filter(t=>t.type==='spend'&&countable(t)&&yearOf(t.date)===y).forEach(t=>{const d=new Date(t.date).getDay();dow[d]+=t.amount;total+=t.amount;});
+  const dailyAvg=total/days;const names=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  let best=-1,bestPct=0;for(let i=0;i<7;i++){const avg=dow[i]/Math.max(1,weeks);const pct=dailyAvg?Math.round((avg/dailyAvg-1)*100):0;if(avg>0&&pct>bestPct){bestPct=pct;best=i;}}
+  const weekendAvgPerWeek=(dow[0]+dow[6])/Math.max(1,weeks);
+  const m=monthly().sp;const monthNames=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  let mi=0;for(let i=1;i<12;i++)if(m[i]>m[mi])mi=i;
+  const ct=catTotals();let topCat='—',topVal=0;for(const k in ct)if(ct[k]>topVal){topVal=ct[k];topCat=k;}
+  return{best:best>=0?names[best]:null,bestPct,weekendAvgPerWeek,month:m[mi]>0?monthNames[mi]:null,topCat};
+}
+function emergencyFund(){const mExp=monthlyExpenseAvg()||1;const months=Math.max(0,ytd().left)/mExp;
+  const status=months>=6?'Healthy':months>=3?'Building':months>=1?'Needs work':'Critical';return{months,status,target:6,mExp};}
+function benchmarking(){const ct=catTotals();const tot=sumObj(ct)||1;const rows=[];
+  for(const c in BENCH){const pct=Math.round((ct[c]||0)/tot*100);rows.push({cat:c,you:pct,rec:BENCH[c],over:pct>BENCH[c]});}
+  return rows.filter(r=>r.you>0).sort((a,b)=>(b.you-b.rec)-(a.you-a.rec));}
+function goalProbability(g){const p=goalProgress(g);const y=today().getFullYear();const days=Math.max(1,daysBetween(new Date(y,0,1),today()));
+  const capWeek=Math.max(0,ytd(g.scope).left)/(days/7);if(p.perWeek<=0)return 95;return Math.max(5,Math.min(95,Math.round(capWeek/p.perWeek*100)));}
+function forecastEngine(){const fEnd=dISO(new Date(today().getFullYear(),11,31));const f=forecastTo(fEnd);const y=ytd();
+  const yearSpend=f.projected;const days=Math.max(1,daysBetween(new Date(today().getFullYear(),0,1),today()));const incPerDay=y.made/days;
+  const yearIncome=y.made+incPerDay*f.days;const yearSave=yearIncome-yearSpend;
+  const ct=catTotals();const me=monthsElapsedYTD();const eatAnnual=(ct['Eating out']||0)/me*12;const gain=eatAnnual*0.2;
+  return{yearSpend,yearSave,gain,newSave:yearSave+gain};}
+function recommendations(){const tips=[];const ct=catTotals();const me=monthsElapsedYTD();
+  const recentEat=scopeTxns().filter(t=>t.type==='spend'&&t.category==='Eating out'&&daysBetween(t.date,today())<=1).reduce((a,t)=>a+t.amount,0);
+  if(recentEat>0){const ann=(ct['Eating out']||0)/me*12;tips.push('You spent <b>'+fmt0(recentEat)+'</b> on eating out in the last day. Cook at home 3x this week and you keep about <b>'+fmt0(ann*0.25)+'</b> this year.');}
+  else{const eat=ct['Eating out']||0;if(eat>0){const ann=eat/me*12;tips.push('Eating out is running <b>'+fmt0(ann)+'/year</b>. Cooking at home twice a week saves roughly <b>'+fmt0(ann*0.25)+'</b>.');}}
+  const subs=recurring().filter(r=>r.isSub);if(subs.length)tips.push('You are paying for <b>'+subs.length+' subscription'+(subs.length>1?'s':'')+'</b> at '+fmt0(subs.reduce((a,s)=>a+s.annual,0))+'/year. Cut the ones you rarely use.');
+  const cf=computeCashflow();if(cf.tot>0&&!cf.cover)tips.push('Warning: upcoming bills ('+fmt0(cf.tot)+') may outrun your incoming cash. Pause non-essentials this month.');
+  const ef=emergencyFund();if(ef.months<3)tips.push('Your safety net covers only <b>'+ef.months.toFixed(1)+' months</b>. Aim for 3, then 6 — even '+fmt0(ef.mExp*0.1)+'/month builds it.');
+  if(!tips.length)tips.push('Log every spend the day it happens — the more data, the sharper these tips get.');
+  return tips.slice(0,4);}
+function goalETA(g){const pg=goalProgress(g);const remain=g.target-pg.saved;if(remain<=0)return 'reached';const y=today().getFullYear();const days=Math.max(1,daysBetween(new Date(y,0,1),today()));const perDay=Math.max(0,ytd(g.scope).left)/days;if(perDay<=0)return null;const eta=new Date(today().getTime()+(remain/perDay)*86400000);return eta.toLocaleDateString('en-IE',{day:'numeric',month:'short',year:'numeric'});}
+function logHealth(){const h=computeHealth();if(!h.hasData)return;const d=dISO(today());DB.healthLog=DB.healthLog||[];const last=DB.healthLog[DB.healthLog.length-1];if(!last||last.date!==d){DB.healthLog.push({date:d,score:h.total});if(DB.healthLog.length>60)DB.healthLog=DB.healthLog.slice(-60);try{Store.set(KEY,JSON.stringify(DB));}catch(e){}}}
+function autopilotHTML(){
+  const items=[];
+  const wl=weeklyLimit(),sw=spentThisWeek();
+  if(wl&&sw>wl)items.push({sev:'crit',text:'You are <b>'+fmt0(sw-wl)+'</b> over your weekly limit.'});
+  else if(wl&&sw>=wl*0.8)items.push({sev:'warn',text:'You have used '+Math.round(sw/wl*100)+'% of your weekly limit — '+fmt0(Math.max(0,wl-sw))+' left.'});
+  const cf=computeCashflow();
+  if(cf.tot>0&&!cf.cover)items.push({sev:'crit',text:'Bills of <b>'+fmt0(cf.tot)+'</b> due in 30 days may exceed your cash.',btn:{label:'Bills',action:"setView('plan')"}});
+  const dueSoon=billsWithin(7);
+  if(dueSoon.length)items.push({sev:'warn',text:'<b>'+esc(dueSoon[0].name)+'</b> ('+fmt(dueSoon[0].amount)+') is due within 7 days.'});
+  const leaks=computeLeaks();
+  if(leaks.leaks.length)items.push({sev:'warn',text:'Biggest leak: <b>'+esc(leaks.leaks[0][0])+'</b> ~'+fmt0(leaks.leaks[0][1])+'/yr.',btn:{label:'Plug',action:"plugLeak('"+leaks.leaks[0][0].replace(/'/g,'')+"')"}});
+  const subs=recurring().filter(r=>r.isSub);
+  if(subs.length)items.push({sev:'info',text:'Cancel <b>'+esc(subs[0].name)+'</b> to save '+fmt0(subs[0].annual)+'/yr.'});
+  const ef=emergencyFund();
+  if(ytd().made>0&&ef.months<1)items.push({sev:'warn',text:'Emergency fund covers only '+ef.months.toFixed(1)+' months. Aim for 3.'});
+  const goals=DB.goals.filter(g=>SCOPE==='combined'||g.scope===SCOPE);
+  goals.forEach(g=>{const pr=goalProbability(g);if(pr<40)items.push({sev:'info',text:'Goal <b>'+esc(g.name)+'</b> is at '+pr+'% likelihood — raise your weekly saving.'});});
+  const stale=DB.meta.lastUpdated?daysBetween(DB.meta.lastUpdated,today())>=7:true;
+  if(stale)items.push({sev:'warn',text:'Your data is over a week old — upload recent transactions to keep this honest.',btn:{label:'Upload',action:"document.getElementById('fileImport').click()"}});
+  const order={crit:0,warn:1,info:2};items.sort((a,b)=>order[a.sev]-order[b.sev]);
+  const top=items.slice(0,5);
+  const icon={crit:'\u{1F525}',warn:'⚠️',info:'\u{1F4A1}'};
+  let body;
+  if(!top.length)body='<div class="meter-note" style="margin:0">All clear — nothing needs your attention right now.</div>';
+  else body='<div class="list">'+top.map(it=>'<div class="li"><span class="dot" style="background:'+(it.sev==='crit'?'#A23B2D':it.sev==='warn'?'#B5791F':'#2E7D4F')+'"></span><div class="main"><div class="s" style="font-size:13.5px;color:var(--ink)">'+icon[it.sev]+' '+it.text+'</div></div>'+(it.btn?'<button class="btn ghost sm no-print" style="flex:0 0 auto" onclick="'+it.btn.action+'">'+it.btn.label+'</button>':'')+'</div>').join('')+'</div>';
+  return '<section><div class="card" style="border-left:4px solid var(--green-2)"><div class="eyebrow">Autopilot · needs your attention</div><div style="margin-top:8px">'+body+'</div></div></section>';
+}
+function healthHeroHTML(){
+  const h=computeHealth();const grade=h.total>=80?'good':h.total>=60?'amber':'red';
+  if(!h.hasData)return '<section><div class="card" style="text-align:center;border-top:4px solid var(--hair)"><div class="eyebrow">Financial Health</div><div style="font-family:Archivo;font-weight:800;font-size:54px;line-height:1;color:var(--muted);margin:6px 0 4px">0<span style="font-size:22px;color:var(--muted)">/100</span></div><div class="micro">Add income and spending and your score builds from your real data.</div></div></section>';
+  const log=DB.healthLog||[];let trend='';if(log.length>=2){const dlt=h.total-log[log.length-2].score;if(dlt!==0)trend=' <span style="font-size:15px;font-weight:700;color:'+(dlt>0?'#2E7D4F':'#A23B2D')+'">'+(dlt>0?'▲':'▼')+Math.abs(dlt)+'</span>';}
+  return '<section><div class="card" style="text-align:center;border-top:4px solid '+hcolor(grade)+'">'+
+    '<div class="eyebrow">Financial Health</div>'+
+    '<div style="font-family:Archivo;font-weight:800;font-size:54px;line-height:1;color:'+hcolor(grade)+';margin:6px 0 4px">'+h.total+'<span style="font-size:22px;color:var(--muted)">/100</span>'+trend+'</div>'+
+    '<span class="pill '+grade+'">'+(grade==='good'?'Healthy':grade==='amber'?'Could be tighter':'Needs attention')+'</span>'+
+    '<div style="margin-top:14px;text-align:left">'+h.parts.map(function(p){var pc=Math.round(p[1]/p[2]*100);var pg=pc>=75?'':pc>=50?'amber':'red';return '<div style="margin-top:8px"><div style="display:flex;justify-content:space-between;font-size:12.5px"><span>'+p[0]+'</span><span class="mono">'+p[1]+'/'+p[2]+'</span></div><div class="meter '+pg+'" style="height:8px;margin-top:4px"><i style="width:'+pc+'%"></i></div></div>';}).join('')+
+    '</div></div></section>';
+}
+function plugLeak(name){setView('plan');toast('Set a weekly cap for '+name+' under Category limits.');}
+function auditHTML(){
+  const a=computeAudit();const any=a.good.length+a.warn.length+a.crit.length;
+  let h='<section><div class="section-title"><h2>Weekly accountant audit</h2></div><div class="card">';
+  if(a.good.length)h+='<div class="micro" style="font-weight:700;color:#2E7D4F;margin-bottom:2px">Good 👍</div><ul class="findings">'+a.good.map(t=>'<li><span class="mk g">✓</span><span>'+esc(t)+'</span></li>').join('')+'</ul>';
+  if(a.warn.length)h+='<div class="micro" style="font-weight:700;color:#B5791F;margin:10px 0 2px">Warning ⚠️</div><ul class="findings">'+a.warn.map(t=>'<li><span class="mk w">!</span><span>'+esc(t)+'</span></li>').join('')+'</ul>';
+  if(a.crit.length)h+='<div class="micro" style="font-weight:700;color:#A23B2D;margin:10px 0 2px">Critical 🔥</div><ul class="findings">'+a.crit.map(t=>'<li><span class="mk b">×</span><span>'+esc(t)+'</span></li>').join('')+'</ul>';
+  if(!any)h+='<div class="empty">Not enough history yet — add another week of spending and the audit kicks in.</div>';
+  return h+'</div></section>';
+}
+function insightsHTML(){
+  let html='';
+  const lk=computeLeaks();
+  if(lk.leaks.length){html+='<section><div class="section-title"><h2>Money leaks</h2></div><div class="card"><div class="list">'+
+    lk.leaks.map(l=>'<div class="li"><span class="dot" style="background:#A23B2D"></span><div class="main"><div class="t">'+esc(l[0])+'</div></div><div class="amt">'+fmt0(l[1])+'/yr</div><button class="btn ghost sm no-print" style="margin-left:8px;flex:0 0 auto" onclick="plugLeak(\''+l[0].replace(/'/g,'')+'\')">Plug</button></div>').join('')+
+    '</div><div class="meter-note" style="margin-top:10px">Total estimated leak: <b>'+fmt0(lk.total)+'/year</b>. That is real money — plug the top one and you reclaim '+fmt0(lk.leaks[0][1])+'.</div></div></section>';}
+  html+=auditHTML();
+  const subs=recurring().filter(r=>r.isSub);
+  if(subs.length){const mo=subs.reduce((a,s)=>a+s.monthly,0);const top2=subs.slice(0,2);const save2=top2.reduce((a,s)=>a+s.annual,0);
+    html+='<section><div class="section-title"><h2>Subscription audit</h2></div><div class="card"><div class="meter-note" style="margin:0 0 8px">Active subscriptions: <b>'+fmt0(mo)+'/month</b></div><div class="list">'+
+    subs.map(s=>'<div class="li"><span class="dot" style="background:#C9A24B"></span><div class="main"><div class="t">'+esc(s.name)+'</div><div class="s">'+fmt(s.monthly)+'/mo</div></div><div class="amt">'+fmt0(s.annual)+'/yr</div></div>').join('')+
+    '</div><div class="meter-note" style="margin-top:10px">Cancelling <b>'+top2.map(s=>esc(s.name)).join(' + ')+'</b> would save <b>'+fmt0(save2)+'/year</b>.</div></div></section>';}
+  const recs=recommendations();
+  html+='<section><div class="section-title"><h2>Coach — what to do now</h2></div><div class="card"><ul class="findings">'+recs.map(t=>'<li><span class="mk g">→</span><span>'+t+'</span></li>').join('')+'</ul></div></section>';
+  return html;
+}
+function insights2HTML(){
+  let html='';
+  const ef=emergencyFund();const efg=ef.months>=6?'good':ef.months>=3?'amber':'red';const efpct=Math.min(100,Math.round(ef.months/6*100));
+  html+='<section><div class="section-title"><h2>Emergency fund</h2></div><div class="card"><div class="meter-head"><div class="lbl">'+fmt0(Math.max(0,ytd().left))+' <span class="micro">('+ef.months.toFixed(1)+' months)</span></div><div class="amt"><span class="pill '+efg+'">'+ef.status+'</span></div></div><div class="meter '+(efg==='good'?'':efg)+'"><i style="width:'+efpct+'%"></i></div><div class="meter-note" style="margin-top:8px">Target: 6 months of expenses ('+fmt0(ef.mExp*6)+'). Progress: '+efpct+'%.</div></div></section>';
+  const p=spendingPatterns();const items=[];
+  if(p.weekendAvgPerWeek>0)items.push('You spend about <b>'+fmt0(p.weekendAvgPerWeek)+'</b> on an average weekend.');
+  if(p.best&&p.bestPct>5)items.push('Your heaviest day is <b>'+p.best+'</b> — about '+p.bestPct+'% above your daily average.');
+  if(p.topCat!=='—'){const ct=catTotals();const tot=sumObj(ct)||1;items.push('Most expensive category: <b>'+p.topCat+'</b> ('+Math.round((ct[p.topCat]||0)/tot*100)+'% of spend).');}
+  if(p.month)items.push('Most expensive month so far: <b>'+p.month+'</b>.');
+  if(items.length)html+='<section><div class="section-title"><h2>Spending patterns</h2></div><div class="card"><ul class="findings">'+items.map(t=>'<li><span class="mk w">•</span><span>'+t+'</span></li>').join('')+'</ul></div></section>';
+  const goals=DB.goals.filter(g=>SCOPE==='combined'||g.scope===SCOPE);
+  if(goals.length)html+='<section><div class="section-title"><h2>Goal probability</h2></div><div class="card"><div class="list">'+goals.map(g=>{const pr=goalProbability(g);const gg=pr>=70?'good':pr>=40?'amber':'red';const pg=goalProgress(g);const eta=goalETA(g);return '<div class="li"><span class="dot" style="background:'+hcolor(gg)+'"></span><div class="main"><div class="t">'+esc(g.name)+'</div><div class="s">'+fmt0(pg.saved)+' of '+fmt0(g.target)+(eta?' · ~'+eta:'')+'</div></div><span class="pill '+gg+'">'+pr+'%</span></div>';}).join('')+'</div><p class="micro" style="margin-top:8px">Likelihood of hitting target at your current saving pace.</p></div></section>';
+  const fe=forecastEngine();
+  html+='<section><div class="section-title"><h2>Year-end forecast</h2></div><div class="card"><div class="rep-stat-grid" style="margin:0"><div class="rep-stat"><div class="k">Projected spend</div><div class="v">'+fmt0(fe.yearSpend)+'</div></div><div class="rep-stat"><div class="k">Projected savings</div><div class="v '+(fe.yearSave<0?'bad':'good')+'">'+fmt0(fe.yearSave)+'</div></div><div class="rep-stat"><div class="k">Cut eating out 20%</div><div class="v good">+'+fmt0(fe.gain)+'</div></div></div><div class="meter-note" style="margin-top:10px">Cutting eating out 20% lifts year-end savings to <b>'+fmt0(fe.newSave)+'</b>.</div></div></section>';
+  const bm=benchmarking();
+  if(bm.length)html+='<section><div class="section-title"><h2>Benchmarking</h2></div><div class="card"><div class="list">'+bm.slice(0,6).map(r=>'<div class="li"><span class="dot" style="background:'+(r.over?'#A23B2D':'#2E7D4F')+'"></span><div class="main"><div class="t">'+r.cat+'</div><div class="s">You '+r.you+'% · target '+r.rec+'%</div></div><span class="pill '+(r.over?'red':'good')+'">'+(r.over?'Above':'On target')+'</span></div>').join('')+'</div><p class="micro" style="margin-top:8px">Targets are general guidance, not rules.</p></div></section>';
+  const cf=computeCashflow();
+  html+='<section><div class="section-title"><h2>Next 30 days</h2></div><div class="card"><div class="list">'+
+    (cf.bills.length?cf.bills.map(b=>'<div class="li"><span class="dot" style="background:#B5791F"></span><div class="main"><div class="t">'+esc(b.name)+'</div><div class="s">Due '+new Date(b.due).toLocaleDateString('en-IE',{day:'numeric',month:'short'})+'</div></div><div class="amt">'+fmt(b.amount)+'</div></div>').join(''):'<div class="empty">No bills logged for the next 30 days. Add them in Plan.</div>')+
+    '</div><div class="meter-note" style="margin-top:10px">Total upcoming: <b>'+fmt0(cf.tot)+'</b>.'+(cf.tot>0?' <span class="pill '+(cf.cover?'good':'red')+'">'+(cf.cover?'Cashflow covers these · YES':'Cashflow shortfall · NO')+'</span>':'')+'</div></div></section>';
+  return html;
+}
+/* ---------- RENDER: HOME ---------- */
+function homeRange(p){const t=today();let from,to=new Date(t);
+  const monday=d=>{const x=new Date(d);const day=(x.getDay()+6)%7;x.setHours(0,0,0,0);x.setDate(x.getDate()-day);return x;};
+  if(p==='week'){from=monday(t);}
+  else if(p==='lastweek'){const m=monday(t);to=new Date(m);to.setDate(to.getDate()-1);to.setHours(23,59,59,999);from=new Date(m);from.setDate(from.getDate()-7);}
+  else if(p==='month'){from=new Date(t.getFullYear(),t.getMonth(),1);}
+  else if(p==='lastmonth'){from=new Date(t.getFullYear(),t.getMonth()-1,1);to=new Date(t.getFullYear(),t.getMonth(),0);to.setHours(23,59,59,999);}
+  else{from=new Date(t.getFullYear(),0,1);}
+  from.setHours(0,0,0,0);return{from,to};}
+function periodTotals(from,to){const ts=scopeTxns().filter(t=>countable(t)&&new Date(t.date)>=from&&new Date(t.date)<=to);
+  const made=ts.filter(t=>t.type==='income').reduce((a,x)=>a+x.amount,0);
+  const spent=ts.filter(t=>t.type==='spend').reduce((a,x)=>a+x.amount,0);
+  return{made,spent,left:made-spent};}
+function prevRange(from,to){const len=to.getTime()-from.getTime();const pTo=new Date(from.getTime()-1);const pFrom=new Date(from.getTime()-1-len);return{from:pFrom,to:pTo};}
+function periodDelta(now,prev){if(!prev)return 'vs previous: —';const d=Math.round((now-prev)/prev*100);return (d>=0?'+':'')+d+'% vs previous';}
+function setHomePeriod(p){HOMEPERIOD=p;renderHome();}
+function homeStatsHTML(){
+  const HR=homeRange(HOMEPERIOD);const cur=periodTotals(HR.from,HR.to);
+  const PR=prevRange(HR.from,HR.to);const prev=periodTotals(PR.from,PR.to);
+  const sr=cur.made>0?Math.round(cur.left/cur.made*100):0;
+  const labels=[['week','This week'],['lastweek','Last week'],['month','This month'],['lastmonth','Last month'],['year',String(today().getFullYear())]];
+  const seg='<div class="seg" style="margin:0 0 12px;flex-wrap:wrap">'+labels.map(l=>'<button onclick="setHomePeriod(\''+l[0]+'\')" class="'+(HOMEPERIOD===l[0]?'on':'')+'">'+l[1]+'</button>').join('')+'</div>';
+  const leftSub=cur.left<0?('<span style="color:var(--danger);font-weight:700">Overspent '+fmt0(-cur.left)+'</span>'):('Savings rate '+sr+'%');
+  const grid='<section class="grid3">'
+    +'<div class="card stat"><div class="k">Made</div><div class="v good">'+fmt0(cur.made)+'</div><div class="sub">'+periodDelta(cur.made,prev.made)+'</div></div>'
+    +'<div class="card stat"><div class="k">Spent</div><div class="v '+(cur.spent>cur.made?'bad':'')+'">'+fmt0(cur.spent)+'</div><div class="sub">'+periodDelta(cur.spent,prev.spent)+'</div></div>'
+    +'<div class="card stat"><div class="k">Left over</div><div class="v '+(cur.left<0?'bad':'good')+'">'+fmt0(cur.left)+'</div><div class="sub">'+leftSub+'</div></div>'
+    +'</section>';
+  return '<section>'+seg+'</section>'+grid;
+}
+function renderHome(){
+  logHealth();
+  const wl=weeklyLimit(),sw=spentThisWeek(),pct=wl?Math.min(100,Math.round(sw/wl*100)):0;
+  const state=pct>=100?'red':pct>=80?'amber':'';
+  const y=ytd();
+  const lastY=(()=>{const py=today().getFullYear()-1;const ts=scopeTxns().filter(t=>yearOf(t.date)===py&&countable(t));
+    return{made:ts.filter(t=>t.type==='income').reduce((a,t)=>a+t.amount,0),spent:ts.filter(t=>t.type==='spend').reduce((a,t)=>a+t.amount,0)};})();
+  const stale=DB.meta.lastUpdated?daysBetween(DB.meta.lastUpdated,today())>=7:false;
+  const recs=recurring();const subs=recs.filter(r=>r.isSub);
+  const upcoming=upcomingBills();
+  const ct=catTotals();
+  const m=monthly();const cash=cashTrend();
+  const sr=y.made>0?Math.round(y.left/y.made*100):0;
+  let html=`
+  ${autopilotHTML()}
+  ${healthHeroHTML()}
+  ${stale?`<div class="banner bad" style="margin:14px 0"><b>⚠ Data is out of date.</b> Last updated ${ago(DB.meta.lastUpdated)}. Upload or add recent spending so the picture stays honest.</div>`:''}
+  <section>
+    <div class="card">
+      <div class="meter-head">
+        <div class="lbl">This week <span class="micro">(${SCOPE})</span></div>
+        <div class="amt">${fmt(sw)} <span class="muted">/ ${fmt0(wl)}</span></div>
+      </div>
+      <div class="meter ${state}"><i style="width:${pct}%"></i></div>
+      <div class="meter-note">
+        ${state==='red'?`<span class="pill red">Over limit</span> You're ${fmt(sw-wl)} past your weekly cap.`
+          :state==='amber'?`<span class="pill amber">Watch it</span> ${fmt(wl-sw)} left for the week.`
+          :`<span class="pill good">On track</span> ${fmt(wl-sw)} left for the week.`}
+      </div>
+    </div>
+  </section>
+  ${homeStatsHTML()}`;
+  html+=insightsHTML();
+  html+=insights2HTML();
+  // bills & subscriptions now shown in the insights above
+  // goals
+  html+=`<section><div class="section-title"><h2>Savings goals</h2><button class="link no-print" onclick="openGoal()">+ Add</button></div>`;
+  const goals=DB.goals.filter(g=>SCOPE==='combined'||g.scope===SCOPE);
+  if(!goals.length)html+=`<div class="card"><div class="empty">No goals yet. Set one and Pocketly works out what you need to put aside each week.</div></div>`;
+  else goals.forEach(g=>{const prog=goalProgress(g);html+=`<div class="card"><div class="meter-head"><div class="lbl">${esc(g.name)}</div><div class="amt">${fmt0(prog.saved)} <span class="muted">/ ${fmt0(g.target)}</span></div></div><div class="goalbar"><i style="width:${prog.pct}%"></i></div><div class="meter-note">${prog.onTrack?`<span class="pill good">On track</span>`:`<span class="pill amber">Behind</span>`} Put aside <b>${fmt(prog.perWeek)}</b>/week to hit it by ${new Date(g.by).toLocaleDateString('en-IE',{day:'numeric',month:'short',year:'numeric'})}.</div></div>`;});
+  html+=`</section>`;
+  // forecast
+  const fEnd=dISO(new Date(today().getFullYear(),11,31));
+  const f=forecastTo(fEnd);
+  html+=`<section><div class="section-title"><h2>Forecast</h2></div><div class="card">
+    <label class="f">If I keep spending like this, where am I by…</label>
+    <div class="ask"><input class="field" type="date" id="fcDate" value="${fEnd}" onchange="updateForecast()"><button class="btn sm" onclick="updateForecast()">Project</button></div>
+    <div id="fcOut" style="margin-top:12px">${forecastHTML(f)}</div>
+  </div></section>`;
+  // category + month charts
+  html+=`<section class="grid2">
+    <div class="card"><div class="eyebrow">Where it goes — ${today().getFullYear()}</div><div style="margin-top:12px">${donut(ct)}</div></div>
+    <div class="card"><div class="eyebrow">Month by month</div><div style="margin-top:12px">${bars(m.sp,m.inc)}</div></div>
+  </section>`;
+  // cash watch
+  if(cash.thisM.c>0||cash.lastM.c>0){const up=cash.lastM.c>0?Math.round((cash.thisM.c-cash.lastM.c)/cash.lastM.c*100):0;
+    html+=`<section><div class="card"><div class="eyebrow">Cash watch</div><div class="meter-note" style="margin-top:8px">Cash out this month: <b>${fmt(cash.thisM.c)}</b> ${cash.lastM.c?`(${up>=0?'+':''}${up}% vs last month)`:''}. Cash is the easiest money to lose track of — log it the day you spend it.</div></div></section>`;}
+  // recent
+  html+=`<section><div class="section-title"><h2>Recent entries</h2></div><div class="card">`;
+  const recent=scopeTxns().slice().sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,8);
+  if(!recent.length)html+=`<div class="empty">Nothing yet. Tap + to add money out or in, or Upload a statement.</div>`;
+  else html+=`<div class="list">`+recent.map(t=>txRow(t)).join('')+`</div>`;
+  html+=`</div></section>`;
+  document.getElementById('view-home').innerHTML=html;
+}
+function openEdit(id){const t=DB.transactions.find(function(x){return x.id===id;});if(!t)return;editId=id;addType=t.type;addMethod=t.method||'card';addScope=t.scope||'personal';fillCats();document.getElementById('aAmount').value=t.amount;document.getElementById('aMerchant').value=t.merchant||'';document.getElementById('aNote').value=t.note||'';document.getElementById('aDate').value=t.date;document.getElementById('aReceipt').value='';document.getElementById('aCategory').value=t.category;document.getElementById('addTitle').textContent='Edit entry';syncSegs();showModal('addModal');}
+function rowBtns(t){if(VIEWONLY)return '';return '<button class="btn ghost sm no-print" onclick="openEdit(\''+t.id+'\')" style="flex:0 0 auto;padding:4px 9px;margin-left:6px">Edit</button><button class="btn ghost sm no-print" onclick="deleteTxn(\''+t.id+'\')" aria-label="Delete entry" style="flex:0 0 auto;padding:4px 9px;margin-left:6px">✕</button>';}
+function txRow(t){return`<div class="li"><span class="dot" style="background:${t.type==='income'?'#2E7D4F':'#A23B2D'}"></span>
+  ${t.receipt?`<img src="${t.receipt}" class="receipt-thumb">`:''}
+  <div class="main"><div class="t">${esc(t.merchant||t.category)}</div><div class="s">${new Date(t.date).toLocaleDateString('en-IE',{day:'numeric',month:'short'})} · ${esc(t.category)} · ${t.method}${t.scope==='business'?' · business':''}</div></div>
+  <div class="amt ${t.type==='income'?'in':''}">${t.type==='income'?'+':'−'}${fmt(t.amount)}</div>${rowBtns(t)}</div>`;}
+function deltaTxt(now,prev,spendCtx){if(!prev)return'vs last year: —';const d=Math.round((now-prev)/prev*100);return `${d>=0?'+':''}${d}% vs last year`;}
+function ago(iso){const d=daysBetween(iso,today());return d<=0?'today':d===1?'yesterday':d+' days ago';}
+function forecastHTML(f){const y=ytd();return`<div class="rep-stat-grid" style="margin:0">
+  <div class="rep-stat"><div class="k">Per day now</div><div class="v">${fmt(f.perDay)}</div></div>
+  <div class="rep-stat"><div class="k">Extra by then</div><div class="v warn">${fmt0(f.extra)}</div></div>
+  <div class="rep-stat"><div class="k">Total spent</div><div class="v">${fmt0(f.projected)}</div></div>
+  </div><div class="meter-note" style="margin-top:10px">At today's pace you'll spend about <b>${fmt0(f.extra)}</b> more in the next ${f.days} days.</div>`;}
+function updateForecast(){const d=document.getElementById('fcDate').value;if(!d)return;document.getElementById('fcOut').innerHTML=forecastHTML(forecastTo(d));}
+function upcomingBills(){const out=[];const horizon=new Date();horizon.setDate(horizon.getDate()+60);
+  DB.bills.filter(b=>SCOPE==='combined'||b.scope===SCOPE).forEach(b=>{let due=new Date(b.due);
+    if(b.repeat==='monthly'){while(due<today())due.setMonth(due.getMonth()+1);}
+    if(b.repeat==='yearly'){while(due<today())due.setFullYear(due.getFullYear()+1);}
+    if(due<=horizon)out.push({...b,due:dISO(due)});});
+  return out.sort((a,b)=>new Date(a.due)-new Date(b.due));}
+function goalProgress(g){const y=ytd(g.scope);const saved=Math.max(0,y.left);const pct=Math.min(100,Math.round(saved/g.target*100));
+  const weeksLeft=Math.max(1,Math.ceil(daysBetween(today(),g.by)/7));const perWeek=Math.max(0,(g.target-saved)/weeksLeft);
+  const onTrack=saved>=g.target*(1-weeksLeft/Math.max(1,Math.ceil(daysBetween(g.scopeCreated||DB.meta.created,g.by)/7)));
+  return{saved,pct,perWeek,onTrack:saved>=g.target||perWeek<= (DB.settings.limits[g.scope]||700)/4};}
+/* ---------- RENDER: REPORT ---------- */
+function setReportRange(preset){
+  const t=today();let from,to=new Date(t);
+  const mondayOf=d=>{const x=new Date(d);const day=(x.getDay()+6)%7;x.setHours(0,0,0,0);x.setDate(x.getDate()-day);return x;};
+  if(preset==='thisweek'){from=mondayOf(t);}
+  else if(preset==='lastweek'){const mo=mondayOf(t);to=new Date(mo);to.setDate(to.getDate()-1);from=new Date(mo);from.setDate(from.getDate()-7);}
+  else if(preset==='last7'){from=new Date(t);from.setDate(from.getDate()-6);}
+  else if(preset==='thismonth'){from=new Date(t.getFullYear(),t.getMonth(),1);}
+  else if(preset==='thisyear'){from=new Date(t.getFullYear(),0,1);}
+  else{from=new Date(t.getFullYear(),0,1);}
+  document.getElementById('rFrom').value=dISO(from);
+  document.getElementById('rTo').value=dISO(to);
+  buildReport();
+}
+function renderReport(){
+  const y=today().getFullYear();
+  const from=dISO(new Date(y,0,1)),to=dISO(today());
+  document.getElementById('view-report').innerHTML=`
+  <section class="no-print">
+    <div class="card">
+      <div class="eyebrow">Build a report / weekly summary</div>
+      <h2 style="font-size:18px;margin:6px 0 12px">Honest spending report</h2>
+      <label class="f">Pick a timeframe</label>
+      <div class="btn-row" style="margin:0 0 12px">
+        <button type="button" class="btn ghost sm" onclick="setReportRange('thisweek')">This week</button>
+        <button type="button" class="btn ghost sm" onclick="setReportRange('lastweek')">Last week</button>
+        <button type="button" class="btn ghost sm" onclick="setReportRange('last7')">Last 7 days</button>
+        <button type="button" class="btn ghost sm" onclick="setReportRange('thismonth')">This month</button>
+        <button type="button" class="btn ghost sm" onclick="setReportRange('thisyear')">This year</button>
+      </div>
+      <div class="form-grid">
+        <div><label class="f">From</label><input class="field" type="date" id="rFrom" value="${from}"></div>
+        <div><label class="f">To</label><input class="field" type="date" id="rTo" value="${to}"></div>
+      </div>
+      <div class="btn-row" style="margin-top:14px">
+        <button class="btn" onclick="buildReport()">Generate report</button>
+      </div>
+      <p class="micro" style="margin-top:10px">Supportive but honest. Covers ${SCOPE==='combined'?'personal + business':SCOPE}. You'll be able to print to PDF, email or share to WhatsApp.</p>
+    </div>
+  </section>
+  <section id="reportOut"></section>`;
+}
+function scopeSummary(from,to,scope){const ts=DB.transactions.filter(function(t){return countable(t)&&inRange(t,from,to)&&(scope?t.scope===scope:true);});const made=ts.filter(function(t){return t.type==='income';}).reduce(function(a,t){return a+t.amount;},0);const spent=ts.filter(function(t){return t.type==='spend';}).reduce(function(a,t){return a+t.amount;},0);return {made:made,spent:spent,left:made-spent,count:ts.length};}
+function scopeSummaryCard(label,x){return '<div class="rep-stat"><div class="k">'+label+'</div><div class="v" style="font-size:15px">'+fmt0(x.made)+' in / '+fmt0(x.spent)+' out</div><div class="micro" style="margin-top:2px">Left '+fmt0(x.left)+' · '+x.count+' txns</div></div>';}
+function reportForensic(from,to){
+  const ts=DB.transactions.filter(function(t){return countable(t)&&inRange(t,from,to);});
+  const spends=ts.filter(function(t){return t.type==='spend';});
+  const totalSpend=spends.reduce(function(a,t){return a+t.amount;},0)||1;
+  const mer={};spends.forEach(function(t){const k=(t.merchant||t.category||'?');mer[k]=(mer[k]||0)+t.amount;});
+  const topMer=Object.entries(mer).sort(function(a,b){return b[1]-a[1];}).slice(0,10);
+  const largest=spends.slice().sort(function(a,b){return b.amount-a.amount;}).slice(0,10);
+  const cat={};spends.forEach(function(t){if(!cat[t.category])cat[t.category]={a:0,n:0};cat[t.category].a+=t.amount;cat[t.category].n++;});
+  const catRows=Object.entries(cat).sort(function(a,b){return b[1].a-a[1].a;});
+  const cash=spends.filter(function(t){return t.method==='cash';}).reduce(function(a,t){return a+t.amount;},0);
+  const card=totalSpend-cash;
+  const p=scopeSummary(from,to,'personal'),b=scopeSummary(from,to,'business');
+  let h='<div class="eyebrow" style="margin-top:20px">Forensic breakdown — personal &amp; business</div>';
+  h+='<div class="rep-stat-grid" style="grid-template-columns:1fr 1fr">'+scopeSummaryCard('Personal',p)+scopeSummaryCard('Business',b)+'</div>';
+  h+='<div class="eyebrow" style="margin-top:16px">Top merchants by spend</div><div class="list">'+(topMer.length?topMer.map(function(m){return '<div class="li"><span class="dot" style="background:#A23B2D"></span><div class="main"><div class="t">'+esc(m[0])+'</div></div><div class="amt">'+fmt0(m[1])+'</div></div>';}).join(''):'<div class="empty">No spend in range.</div>')+'</div>';
+  h+='<div class="eyebrow" style="margin-top:16px">Largest transactions</div><div class="list">'+largest.map(function(t){return '<div class="li"><span class="dot" style="background:#B5791F"></span><div class="main"><div class="t">'+esc(t.merchant||t.category)+'</div><div class="s">'+new Date(t.date).toLocaleDateString('en-IE',{day:'numeric',month:'short'})+' · '+esc(t.category)+' · '+esc(t.scope)+'</div></div><div class="amt">'+fmt(t.amount)+'</div></div>';}).join('')+'</div>';
+  h+='<div class="eyebrow" style="margin-top:16px">Category breakdown</div><div class="list">'+catRows.map(function(c){return '<div class="li"><span class="dot" style="background:#245C3D"></span><div class="main"><div class="t">'+esc(c[0])+'</div><div class="s">'+c[1].n+' txns · '+Math.round(c[1].a/totalSpend*100)+'% of spend</div></div><div class="amt">'+fmt0(c[1].a)+'</div></div>';}).join('')+'</div>';
+  h+='<div class="meter-note" style="margin-top:12px">Cash out: <b>'+fmt0(cash)+'</b> ('+Math.round(cash/totalSpend*100)+'%) · Card/other: <b>'+fmt0(card)+'</b>. Transactions analysed: <b>'+ts.length+'</b>.</div>';
+  return h;
+}
+function buildReport(){
+  const from=document.getElementById('rFrom').value,to=document.getElementById('rTo').value;
+  if(!from||!to){toast('Pick a from and to date');return;}
+  const all=scopeTxns().filter(t=>inRange(t,from,to));
+  const ts=all.filter(countable);
+  if(!ts.length){document.getElementById('reportOut').innerHTML='<div class="card"><div class="empty">No entries in this date range. Add some spending or pick a wider timeframe.</div></div>';return;}
+  const made=ts.filter(t=>t.type==='income').reduce((a,t)=>a+t.amount,0);
+  const spent=ts.filter(t=>t.type==='spend').reduce((a,t)=>a+t.amount,0);
+  const left=made-spent;const sr=made>0?Math.round(left/made*100):0;
+  const ct={};ts.filter(t=>t.type==='spend').forEach(t=>ct[t.category]=(ct[t.category]||0)+t.amount);
+  const days=Math.max(1,daysBetween(from,to));const perDay=spent/days;const m=monthly();
+  const health=computeHealth();const hgrade=health.total>=80?'good':health.total>=60?'amber':'red';const hcol=hcolor(hgrade);const hlabel=hgrade==='good'?'Healthy':hgrade==='amber'?'Could be tighter':'Needs attention';
+  const leaks=computeLeaks();const cf=computeCashflow();const fe=forecastEngine();const pat=spendingPatterns();const audit=computeAudit();const recsTips=recommendations();
+  const subs=recurring().filter(r=>r.isSub);const subYr=subs.reduce((a,s)=>a+s.annual,0);
+  let vClass='',verdict='';
+  if(left<0){vClass='bad';verdict='CRITICAL: you spent '+fmt0(-left)+' MORE than you earned this period — you are running at a loss. This is unsustainable. The cuts below are not optional.';}
+  else if(sr<10){vClass='bad';verdict='POOR: you kept only '+sr+'% ('+fmt0(left)+'). That is a razor-thin buffer — one bad month wipes it out. Cut the top categories below now.';}
+  else if(sr<20){vClass='warn';verdict='MEDIOCRE: '+sr+'% saved ('+fmt0(left)+'). Acceptable, not safe. You are leaking money in the categories below.';}
+  else{vClass='';verdict='SOLID: '+sr+'% saved ('+fmt0(left)+'). Do not get comfortable — the leaks below still cost you real money every year.';}
+  const actions=[];
+  audit.crit.forEach(t=>actions.push(t));
+  if(leaks.leaks.length)actions.push('Plug your biggest leak: '+esc(leaks.leaks[0][0])+' (~'+fmt0(leaks.leaks[0][1])+'/year).');
+  if(subs.length)actions.push('Review subscriptions ('+fmt0(subYr)+'/year) and cancel what you do not use.');
+  recsTips.forEach(t=>actions.push(t));
+  const actionsTop=actions.slice(0,5);
+  const doc=`
+  <div class="card" id="reportDoc">
+    <div class="rep-head">
+      <div class="ttl">Accountant report</div>
+      <div class="meta">${new Date(from).toLocaleDateString('en-IE',{day:'numeric',month:'short',year:'numeric'})} → ${new Date(to).toLocaleDateString('en-IE',{day:'numeric',month:'short',year:'numeric'})} · ${SCOPE==='combined'?'Personal + Business':SCOPE} · generated ${new Date().toLocaleDateString('en-IE')}</div>
+    </div>
+    <div class="verdict ${vClass}"><b>Accountant verdict.</b> ${verdict}</div>
+    <div class="rep-stat-grid">
+      <div class="rep-stat"><div class="k">Made</div><div class="v" style="color:#2E7D4F">${fmt0(made)}</div></div>
+      <div class="rep-stat"><div class="k">Spent</div><div class="v" style="color:#A23B2D">${fmt0(spent)}</div></div>
+      <div class="rep-stat"><div class="k">Left over</div><div class="v">${fmt0(left)}</div></div>
+    </div>
+    <div class="eyebrow" style="margin-top:18px">Financial health</div>
+    <div class="meter-head" style="margin-top:6px"><div class="lbl"><b style="color:${hcol};font-size:22px">${health.total}</b><span class="muted">/100</span></div><div class="amt"><span class="pill ${hgrade}">${hlabel}</span></div></div>
+    <div class="meter ${hgrade==='good'?'':hgrade}"><i style="width:${health.total}%"></i></div>
+    <div style="margin-top:8px">${health.parts.map(p=>`<div style="display:flex;justify-content:space-between;font-size:12px;margin-top:4px"><span>${p[0]}</span><span class="mono">${p[1]}/${p[2]}</span></div>`).join('')}</div>
+    <div class="grid2" style="margin-top:18px">
+      <div><div class="eyebrow">Where it went</div>${donut(ct)}</div>
+      <div><div class="eyebrow">By month</div>${bars(m.sp,m.inc)}</div>
+    </div>
+    ${leaks.leaks.length?`<div class="eyebrow" style="margin-top:18px">Top waste areas</div><ul class="findings">${leaks.leaks.slice(0,5).map(l=>`<li><span class="mk b">!</span><span>${esc(l[0])} — <b>${fmt0(l[1])}/year</b></span></li>`).join('')}</ul><div class="meter-note">Estimated total leak: <b>${fmt0(leaks.total)}/year</b>.</div>`:''}
+    <div class="eyebrow" style="margin-top:18px">Upcoming bills — next 30 days</div>
+    <div class="meter-note" style="margin-top:6px">${cf.bills.length?cf.bills.map(b=>esc(b.name)+' '+fmt(b.amount)).join(' · '):'No bills logged.'}</div>
+    <div class="meter-note" style="margin-top:6px">Total upcoming: <b>${fmt0(cf.tot)}</b>.${cf.tot>0?` <span class="pill ${cf.cover?'good':'red'}">${cf.cover?'Cashflow covers these · YES':'Cashflow shortfall · NO'}</span>`:''}</div>
+    <div class="eyebrow" style="margin-top:18px">Forecast</div>
+    <div class="meter-note" style="margin-top:6px">At ${fmt(perDay)}/day you are on track for about <b>${fmt0(fe.yearSpend)}</b> spent and <b>${fmt0(fe.yearSave)}</b> saved by year end. Cutting eating out 20% would add ${fmt0(fe.gain)}.</div>
+    ${(pat.best||pat.topCat!=='—')?`<div class="eyebrow" style="margin-top:18px">Spending patterns</div><ul class="findings">${[pat.best&&pat.bestPct>5?('Heaviest day: '+pat.best+' (+'+pat.bestPct+'% vs daily average)'):'',pat.topCat!=='—'?('Top category: '+pat.topCat):'',pat.weekendAvgPerWeek>0?('Average weekend spend: '+fmt0(pat.weekendAvgPerWeek)):''].filter(Boolean).map(t=>`<li><span class="mk w">•</span><span>${t}</span></li>`).join('')}</ul>`:''}
+    <div class="verdict" style="border-color:#1B3A2B;margin-top:18px"><b>Actions for next week</b><ul class="findings" style="margin-top:6px">${actionsTop.length?actionsTop.map(t=>`<li><span class="mk g">→</span><span>${t}</span></li>`).join(''):'<li><span>Keep logging every spend the day it happens.</span></li>'}</ul></div>
+    ${reportForensic(from,to)}
+    <div class="meta" style="margin-top:18px;text-align:center;border-top:1px solid var(--hair);padding-top:12px">Pocketly · honest money tracking</div>
+  </div>
+  <div class="btn-row no-print" style="margin-top:14px">
+    <button class="btn" onclick="sharePDF()">📄 Download PDF</button>
+    <button class="btn ghost" onclick="window.print()">Print</button>
+    <button class="btn ghost" onclick="shareReport('whatsapp',${made},${spent},${left})">WhatsApp</button>
+    <button class="btn ghost" onclick="shareReport('email',${made},${spent},${left})">Email</button>
+  </div>`;
+  document.getElementById('reportOut').innerHTML=doc;
+  DB.reportHistory.unshift({id:uid(),at:new Date().toISOString(),from,to,scope:SCOPE,made,spent,left});
+  DB.reportHistory=DB.reportHistory.slice(0,30);Store.set(KEY,JSON.stringify(DB));
+  const ro=document.getElementById('reportOut');if(ro.scrollIntoView)ro.scrollIntoView({behavior:'smooth'});
+}
+async function sharePDF(){
+  const el=document.getElementById('reportDoc');
+  if(!el){toast('Generate the report first');return;}
+  showScan('Building your PDF…');
+  try{
+    if(typeof window.html2pdf==='undefined')await loadScript(HTML2PDF_CDN);
+    const opt={margin:8,filename:'pocketly-report.pdf',image:{type:'jpeg',quality:0.95},
+      html2canvas:{scale:2,useCORS:true,backgroundColor:'#ffffff'},
+      jsPDF:{unit:'mm',format:'a4',orientation:'portrait'}};
+    const blob=await window.html2pdf().set(opt).from(el).outputPdf('blob');
+    hideScan();
+    const file=new File([blob],'pocketly-report.pdf',{type:'application/pdf'});
+    if(navigator.canShare&&navigator.canShare({files:[file]})){
+      try{await navigator.share({files:[file],title:'Pocketly report',text:'My Pocketly spending report'});return;}catch(e){if(e&&e.name==='AbortError')return;}
+    }
+    const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='pocketly-report.pdf';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),4000);
+    toast('PDF saved — attach it to your message');
+  }catch(e){hideScan();toast('Could not build the PDF — use Save as PDF instead');}
+}
+function shareReport(how,made,spent,left){
+  const txt='Pocketly report — Made '+fmt0(made)+', Spent '+fmt0(spent)+', Left over '+fmt0(left)+'. Full breakdown in the PDF.';
+  if(how==='whatsapp'){const u='https://wa.me/?text='+encodeURIComponent(txt);const w=window.open(u,'_blank');if(!w)window.location.href=u;}
+  else if(how==='email'){window.location.href='mailto:?subject='+encodeURIComponent('My spending report')+'&body='+encodeURIComponent(txt+'\n\n(Tip: use Share PDF to attach the full report.)');}
+  else if(navigator.share){navigator.share({title:'Spending report',text:txt}).catch(function(){});}
+  else if(navigator.clipboard){navigator.clipboard.writeText(txt).then(function(){toast('Summary copied to clipboard');});}
+  else{toast('Use Share PDF for the full report');}
+}
+function feedbackHTML(){
+  const fr=DB.featureRequests||[];
+  const rows=fr.length?('<div class="list">'+fr.slice(0,20).map(r=>'<div class="li"><span class="dot" style="background:#245C3D"></span><div class="main"><div class="t" style="white-space:normal">'+esc(r.text)+'</div><div class="s">'+esc(r.type||'Idea')+' · '+new Date(r.t).toLocaleDateString('en-IE')+'</div></div><button class="btn ghost sm no-print" style="flex:0 0 auto" onclick="deleteFeedback(\''+r.id+'\')">✕</button></div>').join('')+'</div>'):'<div class="empty">No requests yet. What would make Pocketly better for you?</div>';
+  return '<section><div class="section-title"><h2>Make Pocketly better</h2></div><div class="card">'
+   +'<label class="f">Your idea or request</label>'
+   +'<textarea class="field" id="fbText" rows="3" placeholder="e.g. add a dark mode, or let me split a transaction"></textarea>'
+   +'<label class="f" style="margin-top:10px">Type</label><select class="field" id="fbType"><option>Feature idea</option><option>Something confusing</option><option>Bug</option><option>Design</option><option>Other</option></select>'
+   +'<div class="btn-row" style="margin-top:10px"><button class="btn sm" onclick="saveFeedback()">Save request</button><button class="btn ghost sm" onclick="copyFeedback()">Copy all</button><button class="btn ghost sm" onclick="emailFeedback()">Email all</button></div>'
+   +'<div class="eyebrow" style="margin-top:16px">Your requests ('+fr.length+')</div><div style="margin-top:8px">'+rows+'</div>'
+   +'<p class="micro" style="margin-top:10px">Saved on your device. Copy or email the list so the changes can be applied to the app.</p></div></section>';
+}
+function saveFeedback(){const el=document.getElementById('fbText');const t=(el&&el.value||'').trim();if(!t)return toast('Type your idea first');const ty=(document.getElementById('fbType')||{}).value||'Idea';DB.featureRequests=DB.featureRequests||[];DB.featureRequests.unshift({id:uid(),t:new Date().toISOString(),type:ty,text:t});DB.featureRequests=DB.featureRequests.slice(0,100);Store.set(KEY,JSON.stringify(DB));if(el)el.value='';renderPlan();toast('Request saved');}
+function deleteFeedback(id){DB.featureRequests=(DB.featureRequests||[]).filter(r=>r.id!==id);Store.set(KEY,JSON.stringify(DB));renderPlan();toast('Removed');}
+function fbTextAll(){const fr=DB.featureRequests||[];return 'Pocketly feature requests\n'+new Date().toLocaleString('en-IE')+'\nCount: '+fr.length+'\n\n'+fr.map((r,i)=>(i+1)+'. ['+(r.type||'Idea')+'] '+r.text+'  ('+new Date(r.t).toLocaleDateString('en-IE')+')').join('\n');}
+function copyFeedback(){const x=fbTextAll();if(navigator.clipboard)navigator.clipboard.writeText(x).then(function(){toast('Requests copied');});else toast('Copy not supported here');}
+function emailFeedback(){window.location.href='mailto:?subject='+encodeURIComponent('Pocketly — make it better')+'&body='+encodeURIComponent(fbTextAll());}
+async function runSelfTest(){
+  const res=[];const ok=function(n,c,m){res.push((c?'\u2713 ':'\u2717 ')+n+(m?(' — '+m):''));};
+  ok('Local storage',Store.persistent);
+  ok('Report engine',typeof buildReport==='function');
+  ok('Cloud config',!!SB_URL&&!!SB_KEY);
+  try{await sbInit();const r=await sb.from('pocketly_data').select('id').eq('id',CLOUDKEY).maybeSingle();ok('Cloud read',!r.error,r.error?r.error.message:'');
+    const w=await sb.from('pocketly_data').upsert({id:CLOUDKEY,data:DB,updated:new Date().toISOString()});ok('Cloud write',!w.error,w.error?w.error.message:'');}catch(e){ok('Cloud connection',false,e.message);}
+  try{if(typeof window.html2pdf==='undefined')await loadScript(HTML2PDF_CDN);ok('PDF library',typeof window.html2pdf!=='undefined');}catch(e){ok('PDF library',false,e.message);}
+  ok('Transactions loaded',true,(DB.transactions?DB.transactions.length:0)+' entries');
+  res.forEach(function(r){if(r[0]==='\u2717')logError('SELFTEST '+r,'selftest');});
+  alert('Pocketly self-test ('+BUILD+')\n\n'+res.join('\n'));
+  return res;
+}
+function logError(msg,src){try{DB.errorLog=DB.errorLog||[];DB.errorLog.unshift({t:new Date().toISOString(),msg:String(msg).slice(0,300),src:String(src||'').slice(0,200)});DB.errorLog=DB.errorLog.slice(0,50);Store.set(KEY,JSON.stringify(DB));}catch(e){}}
+function diagnosticsHTML(){
+  const log=DB.errorLog||[];
+  const rows=log.length?('<div class="list">'+log.slice(0,20).map(e=>'<div class="li"><span class="dot" style="background:'+(/USER REPORT/.test(e.msg)?'#245C3D':'#A23B2D')+'"></span><div class="main"><div class="t" style="white-space:normal">'+esc(e.msg)+'</div><div class="s">'+new Date(e.t).toLocaleString('en-IE')+(e.src?(' · '+esc(e.src)):'')+'</div></div></div>').join('')+'</div>'):'<div class="empty">No problems recorded. If something looks wrong, describe it below.</div>';
+  return '<section><div class="section-title"><h2>Diagnostics &amp; report a problem</h2></div><div class="card">'
+    +'<div class="eyebrow">Captured issues ('+log.length+')</div><div style="margin-top:8px">'+rows+'</div>'
+    +'<label class="f" style="margin-top:14px">Describe a problem you hit</label>'
+    +'<textarea class="field" id="bugText" rows="3" placeholder="What were you doing, and what went wrong?"></textarea>'
+    +'<div class="btn-row" style="margin-top:10px"><button class="btn sm" onclick="runSelfTest()">Run self-test</button><button class="btn ghost sm" onclick="saveBug()">Save report</button><button class="btn ghost sm" onclick="copyDiagnostics()">Copy diagnostics</button><button class="btn ghost sm" onclick="emailDiagnostics()">Email diagnostics</button><button class="btn ghost sm" style="border-color:#E7C0B8;color:#A23B2D" onclick="clearErrors()">Clear log</button></div>'
+    +'<p class="micro" style="margin-top:10px">Errors on the live site are captured here automatically. Copy or email the diagnostics to get the site fixed. Build: '+BUILD+'.</p></div></section>';
+}
+function saveBug(){const el=document.getElementById('bugText');const t=(el&&el.value||'').trim();if(!t)return toast('Type the problem first');logError('USER REPORT: '+t,'user');if(el)el.value='';renderPlan();toast('Report saved to the log');}
+function diagText(){const log=DB.errorLog||[];return 'Pocketly diagnostics\n'+new Date().toLocaleString('en-IE')+'\nDevice: '+navigator.userAgent+'\nEntries: '+log.length+'\n\n'+log.slice(0,50).map(e=>e.t+' | '+(e.src||'')+' | '+e.msg).join('\n');}
+function copyDiagnostics(){const x=diagText();if(navigator.clipboard)navigator.clipboard.writeText(x).then(function(){toast('Diagnostics copied');});else toast('Copy not supported here');}
+function emailDiagnostics(){window.location.href='mailto:?subject='+encodeURIComponent('Pocketly diagnostics')+'&body='+encodeURIComponent(diagText());}
+function clearErrors(){if(confirm('Clear the problem log?')){DB.errorLog=[];Store.set(KEY,JSON.stringify(DB));renderPlan();toast('Log cleared');}}
+/* ---------- RENDER: PLAN (limits, categories, bills, goals, data) ---------- */
+function renderPlan(){
+  const recs=recurring('combined');
+  document.getElementById('view-plan').innerHTML=`
+  ${cloudHTML()}
+  ${versionsHTML()}
+  ${importsHTML()}
+  ${manualHTML()}
+  <section><div class="section-title"><h2>Weekly limits</h2></div>
+    <div class="card">
+      <div class="grid2">
+        <div><label class="f">Personal / week (€)</label><input class="field mono" type="number" id="limP" value="${DB.settings.limits.personal}"></div>
+        <div><label class="f">Business / week (€)</label><input class="field mono" type="number" id="limB" value="${DB.settings.limits.business}"></div>
+      </div>
+      <button class="btn sm" style="margin-top:12px;width:auto" onclick="saveLimits()">Save limits</button>
+    </div>
+  </section>
+  <section><div class="section-title"><h2>Category limits</h2></div>
+    <div class="card">
+      <p class="micro" style="margin-top:0">Optional caps per category (per week). Leave blank for no cap.</p>
+      <div id="catLims">${CATS.map(c=>`<div class="row" style="align-items:center;margin-top:8px"><div style="flex:1;font-size:14px">${c}</div><input class="field mono" style="width:120px" type="number" placeholder="—" value="${DB.settings.categoryLimits[c]||''}" data-cat="${c}"></div>`).join('')}</div>
+      <button class="btn sm" style="margin-top:12px;width:auto" onclick="saveCatLimits()">Save category caps</button>
+    </div>
+  </section>
+  <section><div class="section-title"><h2>Bills & subscriptions</h2><button class="link" onclick="openBill()">+ Add bill</button></div>
+    <div class="card">
+      ${recs.length?`<div class="eyebrow">Detected from your data</div><div class="list" style="margin-top:8px">${recs.slice(0,8).map(r=>`<div class="li"><span class="dot" style="background:#C9A24B"></span><div class="main"><div class="t">${esc(r.name)}</div><div class="s">${fmt(r.monthly)}/mo · seen ${r.count} months</div></div><span class="tag">${fmt0(r.annual)}/yr</span></div>`).join('')}</div>`:`<div class="empty">Upload last year's data and Pocketly will spot recurring bills automatically.</div>`}
+    </div>
+  </section>
+  <section><div class="section-title"><h2>Your data</h2></div>
+    <div class="card">
+      <div class="btn-row">
+        <button class="btn ghost" onclick="document.getElementById('fileImport').click()">Upload statement / receipts</button>
+        <button class="btn ghost" onclick="exportCSV()">Export CSV</button>
+      </div>
+      <p class="micro" style="margin-top:10px">Storage: ${Store.persistent?'saved on this device':'in-memory only (preview) — deploy to keep data'}. ${DB.transactions.length} entries · ${DB.reportHistory.length} saved reports.</p>
+      <button class="btn ghost" style="margin-top:10px;border-color:#E7C0B8;color:#A23B2D" onclick="clearAll()">Clear all data</button>
+    </div>
+  </section>
+  ${feedbackHTML()}
+  ${diagnosticsHTML()}
+  <section><div class="card">
+    <div class="eyebrow">For your watcher</div>
+    <p class="micro" style="margin:6px 0 0">When you share a live link + comments to a friend, that needs the Supabase backend (step 2). This file handles everything else — tracking, limits, forecasts and the printable report you can send today.</p>
+  </div></section>`;
+}
+/* ---------- Actions ---------- */
+function saveLimits(){DB.settings.limits.personal=+document.getElementById('limP').value||0;DB.settings.limits.business=+document.getElementById('limB').value||0;save();toast('Limits saved');}
+function saveCatLimits(){document.querySelectorAll('#catLims input').forEach(i=>{const v=+i.value;if(v>0)DB.settings.categoryLimits[i.dataset.cat]=v;else delete DB.settings.categoryLimits[i.dataset.cat];});save();toast('Category caps saved');}
+function openAdd(){editId=null;document.getElementById('addTitle').textContent='Add money out';addType='spend';addMethod='card';addScope=SCOPE==='combined'?'personal':SCOPE;
+  document.getElementById('aAmount').value='';document.getElementById('aMerchant').value='';document.getElementById('aNote').value='';
+  document.getElementById('aReceipt').value='';document.getElementById('aDate').value=dISO(today());
+  fillCats();syncSegs();showModal('addModal');}
+function fillCats(){const sel=document.getElementById('aCategory');sel.innerHTML=CATS.map(c=>`<option>${c}</option>`).join('');}
+document.getElementById('aMerchant')?.addEventListener('input',e=>{const c=autoCat(e.target.value);document.getElementById('aCategory').value=c;});
+function saveTxn(){const amt=+document.getElementById('aAmount').value;if(!amt||amt<=0)return toast('Enter an amount');
+  const merchant=document.getElementById('aMerchant').value.trim();
+  const category=document.getElementById('aCategory').value;
+  const note=document.getElementById('aNote').value.trim();
+  const date=document.getElementById('aDate').value||dISO(today());
+  const file=document.getElementById('aReceipt').files[0];
+  const finish=(receipt)=>{
+    // rule learning
+    const m=merchant.toLowerCase();
+    if(m&&autoCat(merchant)!==category){
+      if(confirm(`Always file "${merchant}" under ${category}?`)){DB.rules[m]=category;}
+    }
+    if(editId){const et=DB.transactions.find(function(x){return x.id===editId;});if(et){et.date=date;et.amount=amt;et.type=addType;et.method=addMethod;et.category=category;et.scope=addScope;et.merchant=merchant;et.note=note;if(receipt)et.receipt=receipt;et.edited=new Date().toISOString();et.source=et.source||'manual';}editId=null;window.__scanReceiptData=null;closeModal('addModal');save();toast('Entry updated');return;}
+    DB.transactions.push({id:uid(),date,amount:amt,type:addType,method:addMethod,category,scope:addScope,merchant,note,receipt:receipt||null,source:'manual'});
+    window.__scanReceiptData=null;
+    closeModal('addModal');save();toast(addType==='income'?'Money in added':'Spend added');};
+  if(file){const r=new FileReader();r.onload=()=>finish(r.result);r.readAsDataURL(file);}
+  else if(window.__scanReceiptData){finish(window.__scanReceiptData);}
+  else finish(null);
+}
+function openGoal(){goalScope=SCOPE==='combined'?'personal':SCOPE;document.getElementById('gName').value='';document.getElementById('gTarget').value='';document.getElementById('gBy').value='';syncSegs();showModal('goalModal');}
+function saveGoal(){const name=document.getElementById('gName').value.trim();const target=+document.getElementById('gTarget').value;const by=document.getElementById('gBy').value;
+  if(!name||!target||!by)return toast('Fill all goal fields');DB.goals.push({id:uid(),name,target,by,scope:goalScope,created:new Date().toISOString()});closeModal('goalModal');save();toast('Goal added');}
+function openBill(){billScope=SCOPE==='combined'?'personal':SCOPE;document.getElementById('bName').value='';document.getElementById('bAmount').value='';document.getElementById('bDue').value='';syncSegs();showModal('billModal');}
+function saveBill(){const name=document.getElementById('bName').value.trim();const amount=+document.getElementById('bAmount').value;const due=document.getElementById('bDue').value;const repeat=document.getElementById('bRepeat').value;
+  if(!name||!amount||!due)return toast('Fill all bill fields');DB.bills.push({id:uid(),name,amount,due,repeat,scope:billScope});closeModal('billModal');save();toast('Bill added');}
+function recordImport(name,n){DB.imports=DB.imports||[];DB.imports.unshift({name:name,at:new Date().toISOString(),added:n||0});DB.imports=DB.imports.slice(0,50);}
+/* Robust bank/card CSV import + OCR auto-add for images/PDFs */
+async function importFiles(files){
+  let added=0;const errors=[];
+  for(const f of files){
+    try{
+      if(/\.(csv|txt)$/i.test(f.name)||/text\/csv|text\/plain/.test(f.type)){
+        const text=await f.text();const out=parseCSV(text);
+        if(out.error)errors.push(`${f.name}: ${out.error}`);else{added+=out.added;recordImport(f.name,out.added);}
+      } else if(/image\//.test(f.type)){
+        showScan('Reading '+f.name+'…');let text='';
+        try{text=await runOCR(f);}catch(e){text='';}
+        const r=extractReceipt(text);
+        const dataUrl=await fileToDataURL(f);
+        DB.transactions.push({id:uid(),date:r.date||dISO(today()),amount:r.amount||0,type:'spend',method:'card',
+          category:autoCat(r.merchant||''),scope:SCOPE==='combined'?'personal':SCOPE,
+          merchant:r.merchant||'Receipt'+(r.amount?'':' — tap to set amount'),note:r.amount?'Scanned':'Scanned (amount not read)',receipt:dataUrl,source:'import'});
+        added++;recordImport(f.name,1);
+      } else if(/pdf/i.test(f.type)||/\.pdf$/i.test(f.name)){
+        showScan('Reading '+f.name+'…');let text='';
+        try{text=await readPDF(f);}catch(e){errors.push(`${f.name}: couldn't read this PDF. Export your statement as CSV instead.`);continue;}
+        if(looksLikeStatement(text)){errors.push(`${f.name}: looks like a statement — export it as CSV for accurate import.`);continue;}
+        const r=extractReceipt(text);
+        if(!r.amount){errors.push(`${f.name}: couldn't read an amount. Try a clearer scan or enter it manually.`);continue;}
+        DB.transactions.push({id:uid(),date:r.date||dISO(today()),amount:r.amount,type:'spend',method:'card',
+          category:autoCat(r.merchant||''),scope:SCOPE==='combined'?'personal':SCOPE,merchant:r.merchant||'Receipt',note:'Scanned PDF',receipt:null,source:'import'});
+        added++;recordImport(f.name,1);
+      } else if(/\.xlsx?$/i.test(f.name)||/sheet|excel|spreadsheet/i.test(f.type)){
+        showScan('Reading '+f.name+'\u2026');let xtext='';
+        try{if(typeof window.XLSX==='undefined')await loadScript(XLSX_CDN);
+          const buf=await f.arrayBuffer();const wb=window.XLSX.read(buf,{type:'array'});
+          const ws=wb.Sheets[wb.SheetNames[0]];xtext=window.XLSX.utils.sheet_to_csv(ws);
+        }catch(e){errors.push(`${f.name}: couldn't read this spreadsheet \u2014 export it as CSV instead.`);continue;}
+        const out=parseCSV(xtext);if(out.error)errors.push(`${f.name}: ${out.error}`);else{added+=out.added;recordImport(f.name,out.added);}
+      } else errors.push(`${f.name}: unsupported file type. Use a CSV statement, Excel file, photo or PDF.`);
+    }catch(e){errors.push(`${f.name}: ${e.message||'could not read file'}`);}
+  }
+  hideScan();
+  if(added)save();else updateTag();
+  if(errors.length&&!added)showImportError(errors.join('\n'));
+  else if(errors.length)toast(`Added ${added}. ${errors.length} skipped.`);
+  else toast(added?`Added ${added} ${added===1?'entry':'entries'} (duplicates skipped)`:'No new transactions found');
+}
+function fileToDataURL(f){return new Promise((res)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=()=>res(null);r.readAsDataURL(f);});}
+function showImportError(msg){
+  let m=document.getElementById('impErr');
+  if(!m){m=document.createElement('div');m.id='impErr';m.className='modal';m.innerHTML=
+    `<div class="sheet"><button class="close" onclick="document.getElementById('impErr').classList.remove('show')">×</button>
+     <h2>Couldn't import that</h2><div class="banner bad" style="white-space:pre-line" id="impErrMsg"></div>
+     <p class="micro" style="margin-top:12px">Pocketly reads bank and card statements exported as CSV (AIB, Bank of Ireland, Revolut, PTSB and similar). Re-export from your bank as CSV and try again.</p>
+     <button class="btn" style="margin-top:14px" onclick="document.getElementById('impErr').classList.remove('show')">OK</button></div>`;
+    document.body.appendChild(m);}
+  document.getElementById('impErrMsg').textContent=msg;m.classList.add('show');}
+function csvTokenize(text){const rows=[];let row=[],field='',q=false;
+  for(let i=0;i<text.length;i++){const c=text[i];
+    if(q){if(c==='"'){if(text[i+1]==='"'){field+='"';i++;}else q=false;}else field+=c;}
+    else{if(c==='"')q=true;else if(c===','){row.push(field);field='';}
+      else if(c==='\r'){}else if(c==='\n'){row.push(field);rows.push(row);row=[];field='';}else field+=c;}}
+  if(field.length||row.length){row.push(field);rows.push(row);}
+  return rows.filter(r=>r.length>1||(r.length===1&&r[0].trim()!==''));}
+function normDateImport(s){if(!s)return null;s=String(s).trim();
+  let m=s.match(/(\d{4})-(\d{2})-(\d{2})/);if(m)return `${m[1]}-${m[2]}-${m[3]}`;
+  m=s.match(/(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})/);
+  if(m){let d=m[1],mo=m[2],y=m[3];if(y.length===2)y='20'+y;return `${y}-${String(mo).padStart(2,'0')}-${String(d).padStart(2,'0')}`;}
+  return null;}
+function numClean(s){if(s==null)return NaN;return parseFloat(String(s).replace(/[^0-9.\-]/g,''));}
+function parseCSV(text){
+  text=text.replace(/^\uFEFF/,"");
+  const rows=csvTokenize(text);
+  if(rows.length<2)return{error:"That file has no readable rows. Upload a bank or card statement saved as CSV."};
+  // Headerless AIB / open-banking export: synthesise a header so columns are understood
+  if(rows[0]&&/^IE\d{2}[A-Z]{4}/.test(String(rows[0][0]||''))&&/^[A-Z]{3}$/.test(String(rows[0][3]||'').trim())){
+    rows.unshift(['Account','Type','Amount','Currency','DC','Date','Description','Balance','BalType','Reference','Counterparty','Entity']);
+  }
+  const nrm=s=>String(s||'').trim().toLowerCase();
+  const header=rows[0].map(nrm);
+  const find=(...names)=>{for(const n of names){const i=header.indexOf(n);if(i>=0)return i;}return -1;};
+  const findContains=(...subs)=>{for(let i=0;i<header.length;i++){if(subs.some(s=>header[i].includes(s)))return i;}return -1;};
+  const iDate=find('completed date','posted transactions date','transaction date','date')>=0
+    ?find('completed date','posted transactions date','transaction date','date'):findContains('date');
+  const iDebit=find('debit amount','debit'),iCredit=find('credit amount','credit');
+  const iOut=find('paid out'),iIn=find('paid in');
+  const iAmount=find('amount','local currency amount');
+  let iDesc=find('description','description1','narrative','details','merchant');if(iDesc<0)iDesc=findContains('narrative','description','details','merchant','creditor name','reference');
+  const iDesc2=find('description2'),iDesc3=find('description3');
+  const iState=find('state','status'),iCur=find('posted currency','currency');
+  let mode=iDebit>=0||iCredit>=0?'debitcredit':(iOut>=0||iIn>=0?'paidoutin':(iAmount>=0?'signed':null));
+  const dateIdx=iDate>=0?iDate:findContains('date','time');
+  if(!mode||dateIdx<0)return{error:"That doesn't look like a bank or card statement. I couldn't find date and amount columns."};
+  const seen=new Set(DB.transactions.map(t=>t.date+'|'+t.amount+'|'+(t.merchant||'')));
+  const tgtScope=SCOPE==='combined'?'personal':SCOPE;let n=0,invalid=0;
+  for(let r=1;r<rows.length;r++){const c=rows[r];if(!c.length||c.every(x=>!String(x).trim()))continue;
+    if(iState>=0&&c[iState]&&nrm(c[iState])!=='completed'){continue;}
+    if(iCur>=0&&c[iCur]&&nrm(c[iCur])!=='eur'){continue;}
+    const date=normDateImport(c[dateIdx]);let amount=NaN,type='spend';
+    if(mode==='debitcredit'){const d=numClean(c[iDebit]),cr=numClean(c[iCredit]);if(d>0){amount=d;type='spend';}else if(cr>0){amount=cr;type='income';}}
+    else if(mode==='paidoutin'){const o=numClean(c[iOut]),inn=numClean(c[iIn]);if(o>0){amount=o;type='spend';}else if(inn>0){amount=inn;type='income';}}
+    else{const a=numClean(c[iAmount]);if(!isNaN(a)&&a!==0){amount=Math.abs(a);type=a<0?'spend':'income';}}
+    let desc=(c[iDesc]||'').trim();
+    if(iDesc2>=0&&c[iDesc2]&&c[iDesc2].trim())desc+=' '+c[iDesc2].trim();
+    if(!desc&&iDesc3>=0)desc=(c[iDesc3]||'').trim();
+    desc=desc.replace(/\s+/g,' ').trim();
+    if(!date||isNaN(amount)||amount<=0){invalid++;continue;}
+    const key=date+'|'+amount+'|'+desc;if(seen.has(key))continue;seen.add(key);
+    const isTransfer=/\btransfer\b|\bto\s|\bfrom\s/i.test(desc)&&/transfer/i.test(desc);
+    DB.transactions.push({id:uid(),date,amount,type,method:'card',category:isTransfer?'Transfers':autoCat(desc),scope:tgtScope,merchant:desc||'Transaction',note:'',receipt:null,source:'import'});n++;}
+  if(n===0)return{error:invalid?"I read the file but couldn't make sense of the transactions. Is this the right statement export?":"No new transactions found (they may already be imported)."};
+  return{added:n,invalid};}
+/* ---------- Scan a document (on-device OCR + PDF text) ---------- */
+const TESS_CDN='https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';
+const PDF_CDN='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+const PDF_WORKER='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+const HTML2PDF_CDN='https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
+const XLSX_CDN='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+function loadScript(src){return new Promise((res,rej)=>{if([...document.scripts].some(s=>s.src===src))return res();
+  const s=document.createElement('script');s.src=src;s.onload=()=>res();s.onerror=()=>rej(new Error('Could not load reader'));document.head.appendChild(s);});}
+function extractReceipt(text){
+  const lines=(text||'').split(/\r?\n/).map(l=>l.trim()).filter(Boolean);
+  const amts=[];const re=/(?:€|eur)?\s*(\d{1,4}[.,]\d{2})\b/gi;
+  lines.forEach((l,i)=>{let m;const low=l.toLowerCase();
+    while((m=re.exec(l))){const v=parseFloat(m[1].replace(',','.'));
+      const isTotal=/(^|\b)(total|amount due|balance due|to pay|grand total|total due)\b/.test(low)&&!/sub-?total/.test(low);
+      amts.push({v,isTotal});}});
+  let amount=null;const tot=amts.filter(a=>a.isTotal);
+  if(tot.length)amount=Math.max(...tot.map(a=>a.v));else if(amts.length)amount=Math.max(...amts.map(a=>a.v));
+  let date=null,dm=(text||'').match(/(\d{4})-(\d{2})-(\d{2})/);
+  if(dm)date=`${dm[1]}-${dm[2]}-${dm[3]}`;
+  else{dm=(text||'').match(/(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})/);
+    if(dm){let d=dm[1],mo=dm[2],y=dm[3];if(y.length===2)y='20'+y;date=`${y}-${String(mo).padStart(2,'0')}-${String(d).padStart(2,'0')}`;}}
+  let merchant=null;
+  for(const l of lines){const letters=(l.match(/[A-Za-z]/g)||[]).length;
+    if(letters>=3&&letters/l.length>0.5&&!/receipt|invoice|vat|tax|total|date|time|tel|www|http/i.test(l)){merchant=l.replace(/[^A-Za-z0-9 &'.-]/g,'').trim();break;}}
+  return{amount,date,merchant};}
+function looksLikeStatement(text){const pairs=(text||'').match(/\d{1,2}[\/\-.]\d{1,2}[\/\-.]\d{2,4}[\s\S]{0,40}?\d+[.,]\d{2}/g)||[];return pairs.length>=4;}
+async function runOCR(file){
+  if(typeof window.Tesseract==='undefined')await loadScript(TESS_CDN);
+  const {data}=await window.Tesseract.recognize(file,'eng',{logger:m=>{if(m.status==='recognizing text')scanMsg('Reading… '+Math.round(m.progress*100)+'%');}});
+  return data.text||'';}
+async function readPDF(file){
+  if(typeof window.pdfjsLib==='undefined'){await loadScript(PDF_CDN);window.pdfjsLib.GlobalWorkerOptions.workerSrc=PDF_WORKER;}
+  const buf=await file.arrayBuffer();const pdf=await window.pdfjsLib.getDocument({data:buf}).promise;
+  let text='';for(let i=1;i<=pdf.numPages;i++){const p=await pdf.getPage(i);const c=await p.getTextContent();text+=c.items.map(it=>it.str).join(' ')+'\n';}
+  return text;}
+function scanMsg(t){let o=document.getElementById('scanOv');if(o)o.querySelector('.sm').textContent=t;}
+function showScan(t){let o=document.getElementById('scanOv');if(!o){o=document.createElement('div');o.id='scanOv';
+  o.style.cssText='position:fixed;inset:0;z-index:300;background:rgba(27,58,43,.92);display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;gap:14px';
+  o.innerHTML='<div style="width:44px;height:44px;border:4px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin 1s linear infinite"></div><div class="sm" style="font-weight:600"></div><style>@keyframes spin{to{transform:rotate(360deg)}}</style>';
+  document.body.appendChild(o);}o.querySelector('.sm').textContent=t;o.style.display='flex';}
+function hideScan(){const o=document.getElementById('scanOv');if(o)o.style.display='none';}
+function scanReceipt(){closeModal('addModal');const i=document.getElementById('scanInput');i.value='';i.click();}
+async function handleScan(file){
+  showScan('Reading your document…');
+  let text='';
+  try{
+    if(/pdf/i.test(file.type)||/\.pdf$/i.test(file.name))text=await readPDF(file);
+    else text=await runOCR(file);
+  }catch(e){hideScan();return openAddPrefilled({},file,"Couldn't read it automatically — pop the amount in.");}
+  hideScan();
+  if(looksLikeStatement(text)){return showImportError("That looks like a full statement. For statements, export it as CSV from your bank and use Upload — it's far more accurate than scanning. Scanning is best for single receipts.");}
+  const r=extractReceipt(text);
+  if(!r.amount&&!r.merchant)return openAddPrefilled({},file,"Couldn't read it clearly — enter the details and the photo is saved.");
+  openAddPrefilled(r,file,r.amount?null:"Got the receipt — just add the amount.");}
+function openAddPrefilled(r,file,note){
+  addType='spend';addMethod='card';addScope=SCOPE==='combined'?'personal':SCOPE;
+  fillCats();syncSegs();
+  document.getElementById('addTitle').textContent='Check & save';
+  document.getElementById('aAmount').value=r.amount?r.amount.toFixed(2):'';
+  document.getElementById('aMerchant').value=r.merchant||'';
+  document.getElementById('aDate').value=r.date||dISO(today());
+  document.getElementById('aCategory').value=autoCat(r.merchant||'');
+  document.getElementById('aNote').value=note||'';
+  const done=(dataUrl)=>{window.__scanReceiptData=dataUrl||null;showModal('addModal');
+    if(note)toast(note);else toast('Scanned — check the amount and save');};
+  if(file&&/image/.test(file.type)){const rd=new FileReader();rd.onload=()=>done(rd.result);rd.onerror=()=>done(null);rd.readAsDataURL(file);}else done(null);}
+function exportCSV(){const rows=[['date','merchant','category','type','method','scope','amount']];
+  DB.transactions.forEach(t=>rows.push([t.date,t.merchant||'',t.category,t.type,t.method,t.scope,(t.type==='spend'?-t.amount:t.amount)]));
+  const csv=rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);a.download='pocketly-export.csv';a.click();}
+function deleteTxn(id){if(confirm('Delete this entry?')){DB.transactions=DB.transactions.filter(t=>t.id!==id);save();toast('Entry deleted');}}
+function clearAll(){if(confirm('Delete everything? This cannot be undone.')){DB=defaults();save();toast('All data cleared');}}
+/* ---------- UI plumbing ---------- */
+function showModal(id){document.getElementById(id).classList.add('show');}
+function closeModal(id){document.getElementById(id).classList.remove('show');}
+function syncSegs(){
+  setSeg('typeSeg','data-type',addType);setSeg('methodSeg','data-method',addMethod);setSeg('addScopeSeg','data-ascope',addScope);
+  setSeg('goalScopeSeg','data-gscope',goalScope);setSeg('billScopeSeg','data-bscope',billScope);
+}
+function setSeg(id,attr,val){const el=document.getElementById(id);if(!el)return;el.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.getAttribute(attr)===val));}
+function toast(msg){let t=document.getElementById('toast');if(!t){t=document.createElement('div');t.id='toast';t.style.cssText='position:fixed;left:50%;bottom:96px;transform:translateX(-50%);background:#1A1A17;color:#fff;padding:11px 16px;border-radius:999px;font-size:13px;font-weight:600;z-index:200;box-shadow:0 6px 20px rgba(0,0,0,.3)';document.body.appendChild(t);}t.textContent=msg;t.style.opacity='1';clearTimeout(t._h);t._h=setTimeout(()=>t.style.opacity='0',1800);}
+let navHist=['home'],navPos=0;
+function setView(v,fromHist){VIEW=v;['home','report','plan'].forEach(x=>document.getElementById('view-'+x).classList.toggle('hide',x!==v));
+  document.querySelectorAll('nav.tab button[data-view]').forEach(b=>b.classList.toggle('on',b.dataset.view===v));
+  if(v==='report')renderReport();if(v==='plan')renderPlan();window.scrollTo(0,0);
+  if(!fromHist&&navHist[navPos]!==v){navHist=navHist.slice(0,navPos+1);navHist.push(v);navPos=navHist.length-1;}
+  updateHistButtons();}
+function histBack(){if(navPos>0){navPos--;setView(navHist[navPos],true);}}
+function histFwd(){if(navPos<navHist.length-1){navPos++;setView(navHist[navPos],true);}}
+function updateHistButtons(){const b=document.getElementById('navBack'),f=document.getElementById('navFwd');if(b)b.disabled=navPos<=0;if(f)f.disabled=navPos>=navHist.length-1;}
+function renderAll(){updateTag();renderHome();if(VIEW==='report')renderReport();if(VIEW==='plan')renderPlan();}
+function updateTag(){const t=document.getElementById('updatedTag');if(!DB.meta.lastUpdated){t.textContent='No data yet';t.className='updated';return;}
+  const stale=daysBetween(DB.meta.lastUpdated,today())>=7;t.textContent='Updated '+ago(DB.meta.lastUpdated);t.className='updated'+(stale?' stale':'');}
+/* events */
+document.getElementById('scopeSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;SCOPE=b.dataset.scope;setSeg('scopeSeg','data-scope',SCOPE);renderAll();});
+document.querySelectorAll('nav.tab button[data-view]').forEach(b=>b.addEventListener('click',()=>setView(b.dataset.view)));
+document.getElementById('navBack').addEventListener('click',histBack);
+document.getElementById('navFwd').addEventListener('click',histFwd);
+document.getElementById('navUpload').addEventListener('click',()=>document.getElementById('fileImport').click());
+document.getElementById('fabAdd').addEventListener('click',openAdd);
+document.getElementById('typeSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(b){addType=b.dataset.type;setSeg('typeSeg','data-type',addType);document.getElementById('addTitle').textContent=addType==='income'?'Add money in':'Add money out';}});
+document.getElementById('methodSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(b){addMethod=b.dataset.method;setSeg('methodSeg','data-method',addMethod);}});
+document.getElementById('addScopeSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(b){addScope=b.dataset.ascope;setSeg('addScopeSeg','data-ascope',addScope);}});
+document.getElementById('goalScopeSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(b){goalScope=b.dataset.gscope;setSeg('goalScopeSeg','data-gscope',goalScope);}});
+document.getElementById('billScopeSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(b){billScope=b.dataset.bscope;setSeg('billScopeSeg','data-bscope',billScope);}});
+document.getElementById('fileImport').addEventListener('change',e=>{if(e.target.files.length)importFiles(e.target.files);e.target.value='';});
+document.getElementById('scanInput').addEventListener('change',e=>{if(e.target.files[0])handleScan(e.target.files[0]);e.target.value='';});
+window.addEventListener('error',function(e){logError(e.message,(e.filename||'')+':'+(e.lineno||''));});window.addEventListener('unhandledrejection',function(e){logError('Promise: '+((e.reason&&e.reason.message)||e.reason),'');});
+renderAll();updateHistButtons();
+loadVersions();lockCheck();cloudBoot();
+</script>
+</body>
+</html>
